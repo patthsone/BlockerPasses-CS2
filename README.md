@@ -3,7 +3,7 @@ Blocks passages if there are not a certain number of players on the server
 
 # Installation
 1. Install [CounterStrike Sharp](https://github.com/roflmuffin/CounterStrikeSharp), [Metamod:Source](https://www.sourcemm.net/downloads.php/?branch=master) and [ResourcePrecacher](https://github.com/KillStr3aK/ResourcePrecacher)
-3. Download [BlockerPasses-CS2]([https://github.com/patthsone/BlockerPasses-CS2/releases/tag/v0.0.1](https://github.com/patthsone/BlockerPasses-CS2/releases/tag/0.0.1))
+3. Download [BlockerPasses-CS2](https://github.com/patthsone/BlockerPasses-CS2/releases/tag/v0.0.1](https://github.com/patthsone/BlockerPasses-CS2/releases/tag/0.0.1)
 4. Unzip the archive and upload it to the game server
 
 ### After installing ResourcePrecacher, all the paths you write in the config, write them there as well
