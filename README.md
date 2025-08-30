@@ -2,7 +2,7 @@
 Blocks passages if there are not a certain number of players on the server
 
 # Installation
-1. Install [CounterStrike Sharp](https://github.com/roflmuffin/CounterStrikeSharp), [Metamod:Source](https://www.sourcemm.net/downloads.php/?branch=master) and [ResourcePrecacher](https://github.com/KillStr3aK/ResourcePrecacher)
+1. Install [CounterStrike Sharp](https://github.com/roflmuffin/CounterStrikeSharp), [Metamod:Source](https://www.sourcemm.net/downloads.php/?branch=master) and [ResourcePrecacher](https://github.com/Pisex/ResourcePrecacher/releases/tag/1.0f)
 3. Download [BlockerPasses-CS2](https://github.com/patthsone/BlockerPasses-CS2/releases/tag/0.0.1)
 4. Unzip the archive and upload it to the game server
 
