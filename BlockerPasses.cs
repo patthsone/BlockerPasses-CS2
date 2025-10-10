@@ -332,6 +332,176 @@ public class BlockerPasses : BasePlugin
         Console.WriteLine($"BP_PREVIEW: Preview mode toggled for {player.PlayerName}");
     }
 
+    // Команда для создания текстуры
+    [RequiresPermissions("@css/root")]
+    [ConsoleCommand("css_bp_createtexture")]
+    public void OnCmdCreateTexture(CCSPlayerController? player, CommandInfo info)
+    {
+        if (info.ArgCount < 3)
+        {
+            var message = GetTranslation("texture_create_usage");
+            if (player == null)
+                Console.WriteLine($"[BlockerPasses] {message}");
+            else
+                player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
+            return;
+        }
+
+        var textureName = info.ArgByIndex(1);
+        var displayName = info.ArgByIndex(2);
+        var texturePath = info.ArgCount >= 4 ? info.ArgByIndex(3) : null;
+        var category = info.ArgCount >= 5 ? info.ArgByIndex(4) : "custom";
+
+        // Создаем новую текстуру
+        var newTexture = new TextureEntity
+        {
+            Name = textureName,
+            DisplayName = displayName,
+            TexturePath = texturePath,
+            BaseColor = new[] { 255, 255, 255 },
+            Description = $"Custom texture: {displayName}",
+            IsCustom = true,
+            Category = category
+        };
+
+        // Добавляем текстуру в конфиг
+        var newConfig = _config with 
+        { 
+            AvailableTextures = new Dictionary<string, TextureEntity>(_config.AvailableTextures) 
+            { 
+                [textureName] = newTexture 
+            } 
+        };
+        _config = newConfig;
+
+        // Сохраняем конфиг
+        SaveConfig(_config);
+
+        var successMessage = GetTranslation("texture_created", textureName);
+        if (player == null)
+            Console.WriteLine($"[BlockerPasses] {successMessage}");
+        else
+            player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + successMessage)}");
+    }
+
+    // Команда для применения текстуры к блоку
+    [RequiresPermissions("@css/root")]
+    [ConsoleCommand("css_bp_applytexture")]
+    public void OnCmdApplyTexture(CCSPlayerController? player, CommandInfo info)
+    {
+        if (info.ArgCount < 3)
+        {
+            var message = GetTranslation("texture_apply_usage");
+            if (player == null)
+                Console.WriteLine($"[BlockerPasses] {message}");
+            else
+                player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
+            return;
+        }
+
+        if (!int.TryParse(info.ArgByIndex(1), out var blockIndex))
+        {
+            var message = GetTranslation("invalid_block_index");
+            if (player == null)
+                Console.WriteLine($"[BlockerPasses] {message}");
+            else
+                player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
+            return;
+        }
+
+        var textureName = info.ArgByIndex(2);
+
+        if (!_config.AvailableTextures.TryGetValue(textureName, out var texture))
+        {
+            var message = GetTranslation("texture_not_found", textureName);
+            if (player == null)
+                Console.WriteLine($"[BlockerPasses] {message}");
+            else
+                player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
+            return;
+        }
+
+        if (!_config.Maps.ContainsKey(Server.MapName) || blockIndex < 1 || blockIndex > _config.Maps[Server.MapName].Count)
+        {
+            var message = GetTranslation("invalid_block_index");
+            if (player == null)
+                Console.WriteLine($"[BlockerPasses] {message}");
+            else
+                player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
+            return;
+        }
+
+        // Применяем текстуру к блоку
+        var blocks = _config.Maps[Server.MapName].ToList();
+        var block = blocks[blockIndex - 1];
+        
+        var textureSettings = new TextureSettings
+        {
+            TextureName = textureName,
+            TextureColor = texture.BaseColor,
+            TextureScale = 1.0f,
+            UseCustomTexture = texture.IsCustom,
+            CustomTexturePath = texture.TexturePath
+        };
+
+        var updatedBlock = block with 
+        { 
+            TextureSettings = textureSettings,
+            TexturePath = texture.TexturePath
+        };
+
+        blocks[blockIndex - 1] = updatedBlock;
+
+        var newConfig = _config with 
+        { 
+            Maps = new Dictionary<string, List<BlockEntity>>(_config.Maps) 
+            { 
+                [Server.MapName] = blocks 
+            } 
+        };
+        _config = newConfig;
+
+        // Сохраняем конфиг
+        SaveConfig(_config);
+
+        var successMessage = GetTranslation("texture_applied", textureName, blockIndex);
+        if (player == null)
+            Console.WriteLine($"[BlockerPasses] {successMessage}");
+        else
+            player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + successMessage)}");
+    }
+
+    // Команда для просмотра доступных текстур
+    [RequiresPermissions("@css/root")]
+    [ConsoleCommand("css_bp_textures")]
+    public void OnCmdListTextures(CCSPlayerController? player, CommandInfo info)
+    {
+        if (_config.AvailableTextures.Count == 0)
+        {
+            var noTexturesMessage = GetTranslation("no_textures_available");
+            if (player == null)
+                Console.WriteLine($"[BlockerPasses] {noTexturesMessage}");
+            else
+                player.PrintToChat($" {ReplaceColorTags("{YELLOW}[BlockerPasses] " + noTexturesMessage)}");
+            return;
+        }
+
+        var texturesMessage = GetTranslation("available_textures");
+        if (player == null)
+            Console.WriteLine($"[BlockerPasses] {texturesMessage}");
+        else
+            player.PrintToChat($" {ReplaceColorTags("{BLUE}[BlockerPasses] " + texturesMessage)}");
+
+        foreach (var texture in _config.AvailableTextures.Values)
+        {
+            var textureInfo = $"• {texture.Name}: {texture.DisplayName} ({texture.Category})";
+            if (player == null)
+                Console.WriteLine($"[BlockerPasses] {textureInfo}");
+            else
+                player.PrintToChat($" {ReplaceColorTags("{WHITE}" + textureInfo)}");
+        }
+    }
+
     // Команда для открытия меню управления блокировщиками
     [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_menu")]
@@ -380,7 +550,19 @@ public class BlockerPasses : BasePlugin
                 ["block_added"] = "Block added successfully",
                 ["block_removed"] = "All blocks removed",
                 ["preview_mode"] = "Preview mode enabled",
-                ["preview_disabled"] = "Preview mode disabled"
+                ["preview_disabled"] = "Preview mode disabled",
+                ["texture_create_usage"] = "Usage: css_bp_createtexture <name> <display_name> [texture_path] [category]",
+                ["texture_apply_usage"] = "Usage: css_bp_applytexture <block_index> <texture_name>",
+                ["texture_created"] = "Texture '{0}' created successfully",
+                ["texture_applied"] = "Texture '{0}' applied to block #{1}",
+                ["texture_not_found"] = "Texture '{0}' not found",
+                ["invalid_block_index"] = "Invalid block index",
+                ["no_textures_available"] = "No textures available",
+                ["available_textures"] = "Available textures:",
+                ["texture_management"] = "Texture Management",
+                ["create_texture"] = "Create Texture",
+                ["apply_texture"] = "Apply Texture",
+                ["list_textures"] = "List Textures"
             },
             ["ru"] = new Dictionary<string, string>
             {
@@ -403,7 +585,19 @@ public class BlockerPasses : BasePlugin
                 ["block_added"] = "Блок успешно добавлен",
                 ["block_removed"] = "Все блоки удалены",
                 ["preview_mode"] = "Режим предпросмотра включен",
-                ["preview_disabled"] = "Режим предпросмотра отключен"
+                ["preview_disabled"] = "Режим предпросмотра отключен",
+                ["texture_create_usage"] = "Использование: css_bp_createtexture <имя> <отображаемое_имя> [путь_к_текстуре] [категория]",
+                ["texture_apply_usage"] = "Использование: css_bp_applytexture <индекс_блока> <имя_текстуры>",
+                ["texture_created"] = "Текстура '{0}' успешно создана",
+                ["texture_applied"] = "Текстура '{0}' применена к блоку #{1}",
+                ["texture_not_found"] = "Текстура '{0}' не найдена",
+                ["invalid_block_index"] = "Неверный индекс блока",
+                ["no_textures_available"] = "Нет доступных текстур",
+                ["available_textures"] = "Доступные текстуры:",
+                ["texture_management"] = "Управление текстурами",
+                ["create_texture"] = "Создать текстуру",
+                ["apply_texture"] = "Применить текстуру",
+                ["list_textures"] = "Список текстур"
             }
         };
     }
@@ -441,9 +635,15 @@ public class BlockerPasses : BasePlugin
         foreach (var entity in entitiesMap)
         {
             var color = entity.Color;
+            
+            // Если у блока есть настройки текстуры, используем их цвет
+            if (entity.TextureSettings != null)
+            {
+                color = entity.TextureSettings.TextureColor;
+            }
 
             SpawnProp(entity.ModelPath, new[] { color[0], color[1], color[2] },
-                GetVectorFromString(entity.Origin), GetQAngleFromString(entity.Angles), entity.Scale);
+                GetVectorFromString(entity.Origin), GetQAngleFromString(entity.Angles), entity.Scale, entity.TextureSettings);
         }
 
         Server.PrintToChatAll(
@@ -471,7 +671,7 @@ public class BlockerPasses : BasePlugin
         return default!;
     }
 
-    private void SpawnProp(string modelPath, int[] color, Vector origin, QAngle angles, float? entityScale)
+    private void SpawnProp(string modelPath, int[] color, Vector origin, QAngle angles, float? entityScale, TextureSettings? textureSettings = null)
     {
         var prop = Utilities.CreateEntityByName<CBaseModelEntity>("prop_dynamic_override");
 
@@ -488,6 +688,35 @@ public class BlockerPasses : BasePlugin
 
         if (entityScale != null && entityScale != 0.0f)
             bodyComponent.SceneNode.GetSkeletonInstance().Scale = entityScale.Value;
+
+        // Применяем настройки текстуры, если они есть
+        if (textureSettings != null)
+        {
+            ApplyTextureToProp(prop, textureSettings);
+        }
+    }
+
+    private void ApplyTextureToProp(CBaseModelEntity prop, TextureSettings textureSettings)
+    {
+        // Здесь можно добавить логику применения текстуры к пропу
+        // В CS2 это может включать изменение материала или применение пользовательской текстуры
+        
+        // Для паттерна 2x2 можно создать специальный эффект
+        if (textureSettings.TextureName == "2x2_pattern")
+        {
+            // Применяем специальный эффект для паттерна 2x2
+            // Это может включать изменение цвета или создание визуального эффекта
+            var patternColor = Color.FromArgb(200, 200, 200); // Слегка серый для паттерна
+            prop.Render = patternColor;
+        }
+        
+        // Если используется пользовательская текстура
+        if (textureSettings.UseCustomTexture && !string.IsNullOrEmpty(textureSettings.CustomTexturePath))
+        {
+            // Здесь можно добавить логику загрузки и применения пользовательской текстуры
+            // Пока что просто логируем
+            Logger.LogInformation($"Applying custom texture: {textureSettings.CustomTexturePath}");
+        }
     }
 
     private Config LoadConfig()
@@ -530,6 +759,70 @@ public class BlockerPasses : BasePlugin
             {
                 CurrentLanguage = "en",
                 Translations = new Dictionary<string, Dictionary<string, string>>()
+            },
+            AvailableTextures = new Dictionary<string, TextureEntity>
+            {
+                ["white_block"] = new TextureEntity
+                {
+                    Name = "white_block",
+                    DisplayName = "White Block",
+                    TexturePath = null,
+                    BaseColor = new[] { 255, 255, 255 },
+                    Description = "Classic white block texture",
+                    IsCustom = false,
+                    Category = "basic"
+                },
+                ["blue_block"] = new TextureEntity
+                {
+                    Name = "blue_block",
+                    DisplayName = "Blue Block",
+                    TexturePath = null,
+                    BaseColor = new[] { 30, 144, 255 },
+                    Description = "Blue colored block",
+                    IsCustom = false,
+                    Category = "basic"
+                },
+                ["red_block"] = new TextureEntity
+                {
+                    Name = "red_block",
+                    DisplayName = "Red Block",
+                    TexturePath = null,
+                    BaseColor = new[] { 255, 0, 0 },
+                    Description = "Red colored block",
+                    IsCustom = false,
+                    Category = "basic"
+                },
+                ["green_block"] = new TextureEntity
+                {
+                    Name = "green_block",
+                    DisplayName = "Green Block",
+                    TexturePath = null,
+                    BaseColor = new[] { 0, 255, 0 },
+                    Description = "Green colored block",
+                    IsCustom = false,
+                    Category = "basic"
+                },
+                ["2x2_pattern"] = new TextureEntity
+                {
+                    Name = "2x2_pattern",
+                    DisplayName = "2x2 Pattern",
+                    TexturePath = null,
+                    BaseColor = new[] { 255, 255, 255 },
+                    Description = "2x2 checkerboard pattern like in competitive mode",
+                    IsCustom = false,
+                    Category = "patterns"
+                }
+            },
+            DefaultTextureSettings = new TextureSettings
+            {
+                TextureName = "white_block",
+                TextureColor = new[] { 255, 255, 255 },
+                TextureScale = 1.0f,
+                TextureOffsetX = 0.0f,
+                TextureOffsetY = 0.0f,
+                TextureRotation = 0.0f,
+                UseCustomTexture = false,
+                CustomTexturePath = null
             },
             Maps = new Dictionary<string, List<BlockEntity>>
             {
@@ -691,6 +984,10 @@ public class BlockerPasses : BasePlugin
             OpenMapEntitiesMenu(player);
         });
 
+        menu.AddMenuOption(GetTranslation("texture_management"), (player, option) => {
+            OpenTextureManagementMenu(player);
+        });
+
         menu.Open(player);
     }
 
@@ -796,6 +1093,10 @@ public class BlockerPasses : BasePlugin
             OpenMapEntitiesMenuManager(player);
         });
 
+        menu.AddMenuOption("🎨 " + GetTranslation("texture_management"), (player, option) => {
+            OpenTextureManagementMenuManager(player);
+        });
+
         menu.Open(player);
     }
 
@@ -835,6 +1136,52 @@ public class BlockerPasses : BasePlugin
 
         menu.Open(player);
     }
+
+    private void OpenTextureManagementMenu(CCSPlayerController player)
+    {
+        var menu = new ChatMenu(GetTranslation("texture_management"));
+
+        menu.AddMenuOption(GetTranslation("create_texture"), (player, option) => {
+            player.PrintToChat($" {ReplaceColorTags("{YELLOW}[BlockerPasses] " + GetTranslation("texture_create_usage"))}");
+        });
+
+        menu.AddMenuOption(GetTranslation("apply_texture"), (player, option) => {
+            player.PrintToChat($" {ReplaceColorTags("{YELLOW}[BlockerPasses] " + GetTranslation("texture_apply_usage"))}");
+        });
+
+        menu.AddMenuOption(GetTranslation("list_textures"), (player, option) => {
+            OnCmdListTextures(player, null!);
+        });
+
+        menu.AddMenuOption(GetTranslation("back"), (player, option) => {
+            OpenBlockerPassesMenu(player);
+        });
+
+        menu.Open(player);
+    }
+
+    private void OpenTextureManagementMenuManager(CCSPlayerController player)
+    {
+        var menu = new ChatMenu($"🎨 {GetTranslation("texture_management")}");
+
+        menu.AddMenuOption("✨ " + GetTranslation("create_texture"), (player, option) => {
+            player.PrintToChat($" {ReplaceColorTags("{YELLOW}[BlockerPasses] " + GetTranslation("texture_create_usage"))}");
+        });
+
+        menu.AddMenuOption("🎯 " + GetTranslation("apply_texture"), (player, option) => {
+            player.PrintToChat($" {ReplaceColorTags("{YELLOW}[BlockerPasses] " + GetTranslation("texture_apply_usage"))}");
+        });
+
+        menu.AddMenuOption("📋 " + GetTranslation("list_textures"), (player, option) => {
+            OnCmdListTextures(player, null!);
+        });
+
+        menu.AddMenuOption("🔙 " + GetTranslation("back"), (player, option) => {
+            OpenBlockerPassesMenuManager(player);
+        });
+
+        menu.Open(player);
+    }
 }
 
 public record Config
@@ -844,6 +1191,8 @@ public record Config
     public Dictionary<string, List<BlockEntity>> Maps { get; init; } = null!;
     public MenuSettings Menu { get; init; } = new();
     public LanguageSettings Language { get; init; } = new();
+    public Dictionary<string, TextureEntity> AvailableTextures { get; init; } = new();
+    public TextureSettings DefaultTextureSettings { get; init; } = new();
 }
 
 public record MenuSettings
@@ -870,4 +1219,29 @@ public record BlockEntity
     public int Invisibility { get; init; } = 255; // 0-255, где 0 = полностью прозрачный, 255 = полностью видимый
     public int Quota { get; init; } = 0; // Лимит игроков, 0 = без ограничений
     public string? Name { get; init; } // Имя блока для идентификации
+    public string? TexturePath { get; init; } // Путь к текстуре (опционально)
+    public TextureSettings? TextureSettings { get; init; } // Настройки текстуры
+}
+
+public record TextureSettings
+{
+    public string TextureName { get; init; } = "default";
+    public int[] TextureColor { get; init; } = { 255, 255, 255 };
+    public float TextureScale { get; init; } = 1.0f;
+    public float TextureOffsetX { get; init; } = 0.0f;
+    public float TextureOffsetY { get; init; } = 0.0f;
+    public float TextureRotation { get; init; } = 0.0f;
+    public bool UseCustomTexture { get; init; } = false;
+    public string? CustomTexturePath { get; init; } // Путь к пользовательской текстуре
+}
+
+public record TextureEntity
+{
+    public required string Name { get; init; }
+    public required string DisplayName { get; init; }
+    public string? TexturePath { get; init; }
+    public int[] BaseColor { get; init; } = { 255, 255, 255 };
+    public string Description { get; init; } = "";
+    public bool IsCustom { get; init; } = false;
+    public string? Category { get; init; } = "default";
 }

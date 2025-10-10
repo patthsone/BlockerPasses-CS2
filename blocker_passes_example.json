@@ -7,6 +7,45 @@
     "ShowEntityDetails": true,
     "EnablePositionCommands": true
   },
+  "AvailableTextures": {
+    "white_block": {
+      "Name": "white_block",
+      "DisplayName": "White Block",
+      "TexturePath": null,
+      "BaseColor": [255, 255, 255],
+      "Description": "Classic white block texture",
+      "IsCustom": false,
+      "Category": "basic"
+    },
+    "blue_block": {
+      "Name": "blue_block",
+      "DisplayName": "Blue Block",
+      "TexturePath": null,
+      "BaseColor": [30, 144, 255],
+      "Description": "Blue colored block",
+      "IsCustom": false,
+      "Category": "basic"
+    },
+    "2x2_pattern": {
+      "Name": "2x2_pattern",
+      "DisplayName": "2x2 Pattern",
+      "TexturePath": null,
+      "BaseColor": [255, 255, 255],
+      "Description": "2x2 checkerboard pattern like in competitive mode",
+      "IsCustom": false,
+      "Category": "patterns"
+    }
+  },
+  "DefaultTextureSettings": {
+    "TextureName": "white_block",
+    "TextureColor": [255, 255, 255],
+    "TextureScale": 1.0,
+    "TextureOffsetX": 0.0,
+    "TextureOffsetY": 0.0,
+    "TextureRotation": 0.0,
+    "UseCustomTexture": false,
+    "CustomTexturePath": null
+  },
   "Maps": {
     "de_mirage": [
       {
@@ -14,14 +53,36 @@
         "Color": [ 30, 144, 255 ],
         "Origin": "-1600.46 -741.124 -172.965",
         "Angles": "0 180 0",
-        "Scale": 0.0
+        "Scale": 0.0,
+        "TexturePath": null,
+        "TextureSettings": {
+          "TextureName": "blue_block",
+          "TextureColor": [30, 144, 255],
+          "TextureScale": 1.0,
+          "TextureOffsetX": 0.0,
+          "TextureOffsetY": 0.0,
+          "TextureRotation": 0.0,
+          "UseCustomTexture": false,
+          "CustomTexturePath": null
+        }
       },
       {
         "ModelPath": "models/props/de_mirage/small_door_b.vmdl",
         "Color": [ 255, 255, 255 ],
         "Origin": "588.428 704.941 -136.517",
         "Angles": "0 270.256 0",
-        "Scale": 0.0
+        "Scale": 0.0,
+        "TexturePath": null,
+        "TextureSettings": {
+          "TextureName": "2x2_pattern",
+          "TextureColor": [255, 255, 255],
+          "TextureScale": 1.0,
+          "TextureOffsetX": 0.0,
+          "TextureOffsetY": 0.0,
+          "TextureRotation": 0.0,
+          "UseCustomTexture": false,
+          "CustomTexturePath": null
+        }
       },
       {
         "ModelPath": "models/props/de_mirage/large_door_c.vmdl",
