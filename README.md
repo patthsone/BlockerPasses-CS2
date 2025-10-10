@@ -3,13 +3,16 @@ Blocks passages if there are not a certain number of players on the server
 
 # Installation
 1. Install [CounterStrike Sharp](https://github.com/roflmuffin/CounterStrikeSharp), [Metamod:Source](https://www.sourcemm.net/downloads.php/?branch=master) and [ResourcePrecacher](https://github.com/Pisex/ResourcePrecacher/releases/tag/1.0f)
+2. Install [MenuManagerCS2](https://github.com/NickFox007/MenuManagerCS2) for enhanced menu functionality
 3. Download [BlockerPasses-CS2](https://github.com/patthsone/BlockerPasses-CS2/releases/tag/0.0.1)
 4. Unzip the archive and upload it to the game server
 
 ### After installing ResourcePrecacher, all the paths you write in the config, write them there as well
 
 # Commands
-`css_bp_reload`, `!bp_reload`,`!css_bp_getpos`,`css_bp_geteye` - reloads the configuration(only for `@css/root`)
+`css_bp_reload`, `!bp_reload` - reloads the configuration (only for `@css/root`)
+`css_bp_getpos`, `css_bp_geteye` - gets current position and eye angles (only for `@css/root`)
+`css_bp_menu`, `css_bp` - opens the management menu (only for `@css/root`)
 
 # Config
 
@@ -17,6 +20,12 @@ Blocks passages if there are not a certain number of players on the server
 {
   "Players": 10,      // The number of players after which the passes will open
   "Message": "...",   // A message stating that the passageways are blocked (all the tags are at the bottom)
+  "Menu": {
+    "EnableMenu": true,                    // Enable/disable the management menu
+    "MenuTitle": "BlockerPasses Management", // Title of the management menu
+    "ShowEntityDetails": true,             // Show detailed entity information
+    "EnablePositionCommands": true         // Enable position/angle commands in menu
+  },
   "Maps": {
     "de_mirage": [    // Map name
       {
@@ -66,3 +75,33 @@ Blocks passages if there are not a certain number of players on the server
 Colors - `{DEFAULT}`, `{WHITE}`, `{DARKRED}`, `{GREEN}`, `{LIGHTYELLOW}`, `{LIGHTBLUE}`, `{OLIVE}`, `{LIME}`, `{RED}`, `{LIGHTPURPLE}`, `{PURPLE}`, `{GREY}`, `{YELLOW}`, `{GOLD}`, `{SILVER}`, `{BLUE}`, `{DARKBLUE}`, `{BLUEGREY}`, `{MAGENTA}`, `{LIGHTRED}`, `{ORANGE}`
 
 `{MINPLAYERS}` - minimum number of players
+
+# MenuManager Integration
+
+This plugin now integrates with [MenuManagerCS2](https://github.com/NickFox007/MenuManagerCS2) to provide an enhanced menu system for managing blocker passes.
+
+## Features
+
+- **Management Menu**: Access all plugin functions through an intuitive menu interface
+- **Position Tools**: Get current position and eye angles directly from the menu
+- **Entity Information**: View detailed information about entities on the current map
+- **Configuration Control**: Reload configuration and view current settings
+- **Customizable**: All menu features can be enabled/disabled through configuration
+
+## Menu Commands
+
+- `css_bp_menu` or `css_bp` - Opens the main management menu
+- All existing console commands remain functional
+
+## Menu Options
+
+1. **Reload Config** - Reloads the plugin configuration
+2. **Get Position** - Gets current player position and angles (if enabled)
+3. **Get Eye Angles** - Gets current player eye angles (if enabled)
+4. **Current Settings** - Shows current minimum players and map name
+5. **Map Entities** - Shows all entities configured for the current map
+
+## Requirements
+
+- MenuManagerCS2 must be installed and running
+- MenuManagerApi.dll must be available in the plugin directory
