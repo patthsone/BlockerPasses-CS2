@@ -54,5 +54,5 @@
 
 - Минимальная версия API: 90
 - Целевая платформа: .NET 8.0
-- Зависимости: CounterStrikeSharp.API, MenuManagerApi
+- Зависимости: CounterStrikeSharp.API, MenuManagerApi.dll
 - Автор: PattHs
