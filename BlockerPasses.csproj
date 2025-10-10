@@ -10,7 +10,7 @@
       <Reference Include="CounterStrikeSharp.API">
         <HintPath>CounterStrikeSharp.API.dll</HintPath>
       </Reference>
-      <Reference Include="MenuManagerApi">
+      <Reference Include="MenuManagerApi" Condition="Exists('3rd_party\MenuManagerApi.dll')">
         <HintPath>3rd_party\MenuManagerApi.dll</HintPath>
       </Reference>
     </ItemGroup>

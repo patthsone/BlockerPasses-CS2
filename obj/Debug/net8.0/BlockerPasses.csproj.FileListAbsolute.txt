@@ -1,0 +1,13 @@
+C:\Users\PattHs\Documents\GitHub\BlockerPasses-CS2\obj\Debug\net8.0\BlockerPasses.csproj.AssemblyReference.cache
+C:\Users\PattHs\Documents\GitHub\BlockerPasses-CS2\obj\Debug\net8.0\BlockerPasses.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\PattHs\Documents\GitHub\BlockerPasses-CS2\obj\Debug\net8.0\BlockerPasses.AssemblyInfoInputs.cache
+C:\Users\PattHs\Documents\GitHub\BlockerPasses-CS2\obj\Debug\net8.0\BlockerPasses.AssemblyInfo.cs
+C:\Users\PattHs\Documents\GitHub\BlockerPasses-CS2\obj\Debug\net8.0\BlockerPasses.csproj.CoreCompileInputs.cache
+C:\Users\PattHs\Documents\GitHub\BlockerPasses-CS2\obj\Debug\net8.0\BlockerPasses.sourcelink.json
+C:\Users\PattHs\Documents\GitHub\BlockerPasses-CS2\bin\Debug\net8.0\BlockerPasses.deps.json
+C:\Users\PattHs\Documents\GitHub\BlockerPasses-CS2\bin\Debug\net8.0\BlockerPasses.dll
+C:\Users\PattHs\Documents\GitHub\BlockerPasses-CS2\bin\Debug\net8.0\BlockerPasses.pdb
+C:\Users\PattHs\Documents\GitHub\BlockerPasses-CS2\obj\Debug\net8.0\BlockerPasses.dll
+C:\Users\PattHs\Documents\GitHub\BlockerPasses-CS2\obj\Debug\net8.0\refint\BlockerPasses.dll
+C:\Users\PattHs\Documents\GitHub\BlockerPasses-CS2\obj\Debug\net8.0\BlockerPasses.pdb
+C:\Users\PattHs\Documents\GitHub\BlockerPasses-CS2\obj\Debug\net8.0\ref\BlockerPasses.dll
