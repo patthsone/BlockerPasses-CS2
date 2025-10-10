@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BlockerPasses")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+adff9b21e05b71a468e14b86ac34d184ca86798a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+602df39faba9f96cf9de745e9a2e7eff1bea068f")]
 [assembly: System.Reflection.AssemblyProductAttribute("BlockerPasses")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BlockerPasses")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

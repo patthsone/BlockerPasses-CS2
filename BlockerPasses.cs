@@ -22,10 +22,12 @@ public class BlockerPasses : BasePlugin
 
     private Config _config = null!;
     private bool _menuManagerAvailable = false;
+    private Dictionary<string, Dictionary<string, string>> _translations = new();
 
     public override void Load(bool hotReload)
     {
         _config = LoadConfig();
+        InitializeTranslations();
         RegisterEventHandler<EventRoundStart>(EventRoundStart);
     }
 
@@ -57,17 +59,54 @@ public class BlockerPasses : BasePlugin
     }
 
     [RequiresPermissions("@css/root")]
+    [ConsoleCommand("css_bp_lang")]
+    public void OnCmdLang(CCSPlayerController? player, CommandInfo info)
+    {
+        if (info.ArgCount < 2)
+        {
+            var message = GetTranslation("invalid_language");
+            if (player == null)
+                Console.WriteLine($"[BlockerPasses] {message}");
+            else
+                player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
+            return;
+        }
+
+        var lang = info.ArgString.ToLower();
+        if (lang != "en" && lang != "ru")
+        {
+            var message = GetTranslation("invalid_language");
+            if (player == null)
+                Console.WriteLine($"[BlockerPasses] {message}");
+            else
+                player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
+            return;
+        }
+
+        // Update config with new language
+        var newConfig = _config with { Language = _config.Language with { CurrentLanguage = lang } };
+        _config = newConfig;
+
+        var successMessage = GetTranslation("language_changed");
+        if (player == null)
+            Console.WriteLine($"[BlockerPasses] {successMessage}");
+        else
+            player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + successMessage)}");
+    }
+
+    [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_reload")]
     public void OnCmdReload(CCSPlayerController? player, CommandInfo info)
     {
         _config = LoadConfig();
+        InitializeTranslations();
 
-        const string msg = "Configuration successfully rebooted";
+        var msg = GetTranslation("config_reloaded");
 
         if (player == null)
-            Console.WriteLine(msg);
+            Console.WriteLine($"[BlockerPasses] {msg}");
         else
-            player.PrintToChat(msg);
+            player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + msg)}");
     }
 
     // Новая команда для получения позиции
@@ -77,7 +116,11 @@ public class BlockerPasses : BasePlugin
     {
         if (player == null || !player.PawnIsAlive || player.PlayerPawn.Value == null)
         {
-            info.ReplyToCommand("You must be alive to use this command!");
+            var errorMessage = GetTranslation("must_be_alive");
+            if (player == null)
+                Console.WriteLine($"[BlockerPasses] {errorMessage}");
+            else
+                player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + errorMessage)}");
             return;
         }
 
@@ -94,14 +137,28 @@ public class BlockerPasses : BasePlugin
                        $"{angles.Y.ToString("F2", CultureInfo.InvariantCulture)} " +
                        $"{angles.Z.ToString("F2", CultureInfo.InvariantCulture)}";
 
+        // Создаем шаблон для добавления блока
+        var template = $@"
+{{
+    ""ModelPath"": ""models/props/de_dust/hr_dust/dust_windows/dust_rollupdoor_96x128_surface_lod.vmdl"",
+    ""Color"": [255, 255, 255],
+    ""Origin"": ""{originStr}"",
+    ""Angles"": ""{anglesStr}"",
+    ""Scale"": 1.0,
+    ""Invisibility"": 255,
+    ""Quota"": 0,
+    ""Name"": ""Block_{Server.MapName}_{DateTime.Now:HHmmss}""
+}}";
+
         // Выводим в консоль и чат
-        var message = $"Position: {originStr} | Angles: {anglesStr}";
+        var message = GetTranslation("position_info", originStr, anglesStr);
         
-        info.ReplyToCommand(message);
-        player.PrintToChat($" {ReplaceColorTags("{GREEN}" + message)}");
+        player.PrintToChat($" {ReplaceColorTags("{BLUE}[BlockerPasses] " + message)}");
+        player.PrintToChat($" {ReplaceColorTags("{YELLOW}[BlockerPasses] Template:")}");
+        player.PrintToChat($" {ReplaceColorTags("{WHITE}" + template)}");
         
-        // Также выводим в консоль сервера для удобства копирования
         Console.WriteLine($"BP_POS: {message}");
+        Console.WriteLine($"BP_TEMPLATE: {template}");
     }
 
     // Дополнительная команда для получения позиции с прицелом (куда смотрит игрок)
@@ -129,6 +186,152 @@ public class BlockerPasses : BasePlugin
         Console.WriteLine($"BP_EYE: {message}");
     }
 
+    // Команда для добавления блока
+    [RequiresPermissions("@css/root")]
+    [ConsoleCommand("css_bp_add")]
+    public void OnCmdAdd(CCSPlayerController? player, CommandInfo info)
+    {
+        if (player == null || !player.PawnIsAlive || player.PlayerPawn.Value == null)
+        {
+            var errorMessage = GetTranslation("must_be_alive");
+            if (player == null)
+                Console.WriteLine($"[BlockerPasses] {errorMessage}");
+            else
+                player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + errorMessage)}");
+            return;
+        }
+
+        var pawn = player.PlayerPawn.Value;
+        var origin = pawn.AbsOrigin!;
+        var angles = pawn.AbsRotation!;
+
+        // Параметры по умолчанию
+        var invisibility = 255;
+        var quota = 0;
+        var scale = 1.0f;
+        var color = new int[] { 255, 255, 255 };
+        var modelPath = "models/props/de_dust/hr_dust/dust_windows/dust_rollupdoor_96x128_surface_lod.vmdl";
+
+        // Парсим аргументы команды
+        if (info.ArgCount >= 2)
+        {
+            if (int.TryParse(info.ArgByIndex(1), out var invis))
+                invisibility = Math.Clamp(invis, 0, 255);
+        }
+        if (info.ArgCount >= 3)
+        {
+            if (int.TryParse(info.ArgByIndex(2), out var quotaVal))
+                quota = Math.Max(0, quotaVal);
+        }
+
+        // Форматируем координаты
+        var originStr = $"{origin.X.ToString("F2", CultureInfo.InvariantCulture)} " +
+                       $"{origin.Y.ToString("F2", CultureInfo.InvariantCulture)} " +
+                       $"{origin.Z.ToString("F2", CultureInfo.InvariantCulture)}";
+
+        var anglesStr = $"{angles.X.ToString("F2", CultureInfo.InvariantCulture)} " +
+                       $"{angles.Y.ToString("F2", CultureInfo.InvariantCulture)} " +
+                       $"{angles.Z.ToString("F2", CultureInfo.InvariantCulture)}";
+
+        // Создаем новый блок
+        var newBlock = new BlockEntity
+        {
+            ModelPath = modelPath,
+            Color = color,
+            Origin = originStr,
+            Angles = anglesStr,
+            Scale = scale,
+            Invisibility = invisibility,
+            Quota = quota,
+            Name = $"Block_{Server.MapName}_{DateTime.Now:HHmmss}"
+        };
+
+        // Добавляем блок в конфиг
+        if (!_config.Maps.ContainsKey(Server.MapName))
+        {
+            _config.Maps[Server.MapName] = new List<BlockEntity>();
+        }
+        _config.Maps[Server.MapName].Add(newBlock);
+
+        // Сохраняем конфиг
+        SaveConfig(_config);
+
+        var message = GetTranslation("block_added");
+        player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + message)}");
+        Console.WriteLine($"BP_ADD: Block added to {Server.MapName} with invisibility={invisibility}, quota={quota}");
+    }
+
+    // Команда для просмотра всех блоков на карте
+    [RequiresPermissions("@css/root")]
+    [ConsoleCommand("css_bp_list")]
+    public void OnCmdList(CCSPlayerController? player, CommandInfo info)
+    {
+        if (!_config.Maps.ContainsKey(Server.MapName))
+        {
+            var noEntitiesMessage = GetTranslation("no_entities");
+            if (player == null)
+                Console.WriteLine($"[BlockerPasses] {noEntitiesMessage}");
+            else
+                player.PrintToChat($" {ReplaceColorTags("{YELLOW}[BlockerPasses] " + noEntitiesMessage)}");
+            return;
+        }
+
+        var blocks = _config.Maps[Server.MapName];
+        player.PrintToChat($" {ReplaceColorTags("{BLUE}[BlockerPasses] Blocks on {Server.MapName}:")}");
+        
+        for (int i = 0; i < blocks.Count; i++)
+        {
+            var block = blocks[i];
+            var blockInfo = $"#{i + 1}: {block.Name ?? $"Block_{i + 1}"} | Invisibility: {block.Invisibility} | Quota: {block.Quota}";
+            player.PrintToChat($" {ReplaceColorTags("{WHITE}" + blockInfo)}");
+        }
+        
+        Console.WriteLine($"BP_LIST: Listed {blocks.Count} blocks for {Server.MapName}");
+    }
+
+    // Команда для удаления всех блоков на карте
+    [RequiresPermissions("@css/root")]
+    [ConsoleCommand("css_bp_removeall")]
+    public void OnCmdRemoveAll(CCSPlayerController? player, CommandInfo info)
+    {
+        if (!_config.Maps.ContainsKey(Server.MapName))
+        {
+            var noEntitiesMessage = GetTranslation("no_entities");
+            if (player == null)
+                Console.WriteLine($"[BlockerPasses] {noEntitiesMessage}");
+            else
+                player.PrintToChat($" {ReplaceColorTags("{YELLOW}[BlockerPasses] " + noEntitiesMessage)}");
+            return;
+        }
+
+        var count = _config.Maps[Server.MapName].Count;
+        _config.Maps[Server.MapName].Clear();
+        
+        // Сохраняем конфиг
+        SaveConfig(_config);
+
+        var message = GetTranslation("block_removed");
+        player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + message)} ({count} blocks)");
+        Console.WriteLine($"BP_REMOVEALL: Removed {count} blocks from {Server.MapName}");
+    }
+
+    // Команда для предварительного просмотра блоков
+    [RequiresPermissions("@css/root")]
+    [ConsoleCommand("css_bp_preview")]
+    public void OnCmdPreview(CCSPlayerController? player, CommandInfo info)
+    {
+        if (player == null)
+        {
+            Console.WriteLine("[BlockerPasses] Preview command can only be used by players!");
+            return;
+        }
+
+        // Переключаем режим предпросмотра (пока что просто сообщение)
+        var message = GetTranslation("preview_mode");
+        player.PrintToChat($" {ReplaceColorTags("{CYAN}[BlockerPasses] " + message)}");
+        Console.WriteLine($"BP_PREVIEW: Preview mode toggled for {player.PlayerName}");
+    }
+
     // Команда для открытия меню управления блокировщиками
     [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_menu")]
@@ -150,6 +353,79 @@ public class BlockerPasses : BasePlugin
             // Fallback to native menu if MenuManager is not available
             OpenBlockerPassesMenu(player);
         }
+    }
+
+    private void InitializeTranslations()
+    {
+        _translations = new Dictionary<string, Dictionary<string, string>>
+        {
+            ["en"] = new Dictionary<string, string>
+            {
+                ["menu_title"] = "BlockerPasses Management",
+                ["reload_config"] = "Reload Config",
+                ["get_position"] = "Get Position",
+                ["get_eye_angles"] = "Get Eye Angles",
+                ["current_settings"] = "Current Settings",
+                ["map_entities"] = "Map Entities",
+                ["back"] = "Back",
+                ["config_reloaded"] = "Configuration reloaded!",
+                ["must_be_alive"] = "You must be alive to get position!",
+                ["position_info"] = "Position: {0} | Angles: {1}",
+                ["eye_angles_info"] = "Eye Angles: {0}",
+                ["settings_info"] = "Min Players: {0} | Map: {1}",
+                ["no_entities"] = "No entities configured for this map",
+                ["entity_info"] = "Model: {0}\nOrigin: {1}\nAngles: {2}\nColor: {3}\nScale: {4}\nInvisibility: {5}\nQuota: {6}",
+                ["language_changed"] = "Language changed to English",
+                ["invalid_language"] = "Invalid language. Available: en, ru",
+                ["block_added"] = "Block added successfully",
+                ["block_removed"] = "All blocks removed",
+                ["preview_mode"] = "Preview mode enabled",
+                ["preview_disabled"] = "Preview mode disabled"
+            },
+            ["ru"] = new Dictionary<string, string>
+            {
+                ["menu_title"] = "Управление BlockerPasses",
+                ["reload_config"] = "Перезагрузить конфиг",
+                ["get_position"] = "Получить позицию",
+                ["get_eye_angles"] = "Получить углы взгляда",
+                ["current_settings"] = "Текущие настройки",
+                ["map_entities"] = "Сущности карты",
+                ["back"] = "Назад",
+                ["config_reloaded"] = "Конфигурация перезагружена!",
+                ["must_be_alive"] = "Вы должны быть живы для получения позиции!",
+                ["position_info"] = "Позиция: {0} | Углы: {1}",
+                ["eye_angles_info"] = "Углы взгляда: {0}",
+                ["settings_info"] = "Мин. игроков: {0} | Карта: {1}",
+                ["no_entities"] = "Для этой карты не настроены сущности",
+                ["entity_info"] = "Модель: {0}\nПозиция: {1}\nУглы: {2}\nЦвет: {3}\nМасштаб: {4}\nПрозрачность: {5}\nЛимит: {6}",
+                ["language_changed"] = "Язык изменен на русский",
+                ["invalid_language"] = "Неверный язык. Доступно: en, ru",
+                ["block_added"] = "Блок успешно добавлен",
+                ["block_removed"] = "Все блоки удалены",
+                ["preview_mode"] = "Режим предпросмотра включен",
+                ["preview_disabled"] = "Режим предпросмотра отключен"
+            }
+        };
+    }
+
+    private string GetTranslation(string key, params object[] args)
+    {
+        var currentLang = _config.Language.CurrentLanguage;
+        if (!_translations.ContainsKey(currentLang))
+            currentLang = "en";
+
+        if (_translations[currentLang].TryGetValue(key, out var translation))
+        {
+            return args.Length > 0 ? string.Format(translation, args) : translation;
+        }
+
+        // Fallback to English
+        if (_translations["en"].TryGetValue(key, out var englishTranslation))
+        {
+            return args.Length > 0 ? string.Format(englishTranslation, args) : englishTranslation;
+        }
+
+        return key; // Return key if no translation found
     }
 
     private HookResult EventRoundStart(EventRoundStart @event, GameEventInfo info)
@@ -224,6 +500,18 @@ public class BlockerPasses : BasePlugin
         return config;
     }
 
+    private void SaveConfig(Config config)
+    {
+        var configPath = Path.Combine(ModuleDirectory, "blocker_passes.json");
+        var jsonOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        };
+        
+        File.WriteAllText(configPath, JsonSerializer.Serialize(config, jsonOptions));
+    }
+
     private Config CreateConfig(string configPath)
     {
         var config = new Config
@@ -238,10 +526,15 @@ public class BlockerPasses : BasePlugin
                 ShowEntityDetails = true,
                 EnablePositionCommands = true
             },
-            Maps = new Dictionary<string, List<Entities>>
+            Language = new LanguageSettings
+            {
+                CurrentLanguage = "en",
+                Translations = new Dictionary<string, Dictionary<string, string>>()
+            },
+            Maps = new Dictionary<string, List<BlockEntity>>
             {
                 {
-                    "de_mirage", new List<Entities>
+                    "de_mirage", new List<BlockEntity>
                     {
                         new()
                         {
@@ -250,7 +543,10 @@ public class BlockerPasses : BasePlugin
                             Color = new[] { 30, 144, 255 },
                             Origin = "-1600.46 -741.124 -172.965",
                             Angles = "0 180 0",
-                            Scale = 0.0f
+                            Scale = 0.0f,
+                            Invisibility = 255,
+                            Quota = 0,
+                            Name = "Mirage_Block_1"
                         },
                         new()
                         {
@@ -258,7 +554,10 @@ public class BlockerPasses : BasePlugin
                             Color = new[] { 255, 255, 255 },
                             Origin = "588.428 704.941 -136.517",
                             Angles = "0 270.256 0",
-                            Scale = 0.0f
+                            Scale = 0.0f,
+                            Invisibility = 255,
+                            Quota = 0,
+                            Name = "Mirage_Block_2"
                         },
                         new()
                         {
@@ -538,15 +837,16 @@ public class BlockerPasses : BasePlugin
     }
 }
 
-public class Config
+public record Config
 {
     public int Players { get; init; }
     public required string Message { get; init; }
-    public Dictionary<string, List<Entities>> Maps { get; init; } = null!;
+    public Dictionary<string, List<BlockEntity>> Maps { get; init; } = null!;
     public MenuSettings Menu { get; init; } = new();
+    public LanguageSettings Language { get; init; } = new();
 }
 
-public class MenuSettings
+public record MenuSettings
 {
     public bool EnableMenu { get; init; } = true;
     public string MenuTitle { get; init; } = "BlockerPasses Management";
@@ -554,11 +854,20 @@ public class MenuSettings
     public bool EnablePositionCommands { get; init; } = true;
 }
 
-public class Entities
+public record LanguageSettings
+{
+    public string CurrentLanguage { get; init; } = "en";
+    public Dictionary<string, Dictionary<string, string>> Translations { get; init; } = new();
+}
+
+public record BlockEntity
 {
     public required string ModelPath { get; init; }
     public int[] Color { get; init; } = { 255, 255, 255 };
     public required string Origin { get; init; }
     public required string Angles { get; init; }
     public float? Scale { get; init; }
+    public int Invisibility { get; init; } = 255; // 0-255, где 0 = полностью прозрачный, 255 = полностью видимый
+    public int Quota { get; init; } = 0; // Лимит игроков, 0 = без ограничений
+    public string? Name { get; init; } // Имя блока для идентификации
 }
