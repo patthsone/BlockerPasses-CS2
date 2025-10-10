@@ -28,7 +28,7 @@
 ## Требования для установки
 
 1. **MenuManagerCS2** - основной плагин меню
-2. **MenuManagerApi.dll** - библиотека API
+2. **MenuManager.dll** - библиотека API
 3. **Права администратора** - `@css/root` для доступа к меню
 
 ## Обратная совместимость
@@ -40,13 +40,13 @@
 ## Файлы для установки
 
 - `BlockerPasses.dll` - основной плагин
-- `MenuManagerApi.dll` - библиотека API (новый файл)
+- `MenuManager.dll` - библиотека API (новый файл)
 - `blocker_passes.json` - конфигурация (обновлена)
 
 ## Инструкции по установке
 
 1. Установите MenuManagerCS2 согласно инструкциям
-2. Скопируйте `MenuManagerApi.dll` в папку плагина
+2. Скопируйте `MenuManager.dll` в папку плагина
 3. Перезапустите сервер
 4. Используйте `css_bp_menu` для доступа к меню
 
@@ -54,5 +54,5 @@
 
 - Минимальная версия API: 90
 - Целевая платформа: .NET 8.0
-- Зависимости: CounterStrikeSharp.API, MenuManagerApi.dll
+- Зависимости: CounterStrikeSharp.API, MenuManager.dll
 - Автор: PattHs

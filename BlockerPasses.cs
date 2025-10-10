@@ -9,7 +9,7 @@ using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
-using MenuManagerApi;
+using MenuManager;
 
 namespace BlockerPasses;
 
@@ -21,7 +21,7 @@ public class BlockerPasses : BasePlugin
     public override string ModuleVersion => "v0.1.0";
 
     private Config _config = null!;
-    private IMenuManagerApi? _menuManager;
+    private IMenuApi? _menuManager;
 
     public override void Load(bool hotReload)
     {
@@ -29,7 +29,7 @@ public class BlockerPasses : BasePlugin
         RegisterEventHandler<EventRoundStart>(EventRoundStart);
         
         // Инициализация MenuManager
-        _menuManager = new MenuManagerApi.MenuManagerApi();
+        _menuManager = new MenuApi();
     }
 
     [RequiresPermissions("@css/root")]
@@ -317,7 +317,7 @@ public class BlockerPasses : BasePlugin
             return;
         }
 
-        var menu = _menuManager.CreateMenu(_config.Menu.MenuTitle, player);
+        var menu = _menuManager.GetMenu(_config.Menu.MenuTitle);
         
         // Основные опции меню
         menu.AddMenuOption("Reload Config", (player, option) => {
@@ -380,14 +380,14 @@ public class BlockerPasses : BasePlugin
             OpenMapEntitiesMenu(player);
         });
 
-        menu.OpenMenu(player);
+        menu.DisplayToPlayer(player);
     }
 
     private void OpenMapEntitiesMenu(CCSPlayerController player)
     {
         if (_menuManager == null) return;
 
-        var menu = _menuManager.CreateMenu($"Entities for {Server.MapName}", player);
+        var menu = _menuManager.GetMenu($"Entities for {Server.MapName}");
 
         if (_config.Maps.TryGetValue(Server.MapName, out var entities))
         {
@@ -424,7 +424,7 @@ public class BlockerPasses : BasePlugin
             OpenBlockerPassesMenu(player);
         });
 
-        menu.OpenMenu(player);
+        menu.DisplayToPlayer(player);
     }
 }
 

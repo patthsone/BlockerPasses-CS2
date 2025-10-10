@@ -104,4 +104,4 @@ This plugin now integrates with [MenuManagerCS2](https://github.com/NickFox007/M
 ## Requirements
 
 - MenuManagerCS2 must be installed and running
-- MenuManagerApi.dll must be available in the plugin directory
+- MenuManager.dll must be available in the plugin directory
