@@ -1,100 +1,46 @@
 # BlockerPasses-CS2
 Blocks passages if there are not a certain number of players on the server
 
-# Installation
+## Features
+- **MenuManager Integration**: Uses MenuManagerCS2 for enhanced menu system
+- **Fallback Support**: Falls back to native ChatMenu if MenuManager is not available
+- **Management Menu**: Easy-to-use menu interface for administrators
+- **Position Tools**: Get current position and eye angles
+- **Entity Information**: View detailed information about map entities
+- **Configuration Control**: Reload configuration and view settings
+
+## Installation
 1. Install [CounterStrike Sharp](https://github.com/roflmuffin/CounterStrikeSharp), [Metamod:Source](https://www.sourcemm.net/downloads.php/?branch=master) and [ResourcePrecacher](https://github.com/Pisex/ResourcePrecacher/releases/tag/1.0f)
-2. Install [MenuManagerCS2](https://github.com/NickFox007/MenuManagerCS2) for enhanced menu functionality
-3. Download [BlockerPasses-CS2](https://github.com/patthsone/BlockerPasses-CS2/releases/tag/0.0.1)
-4. Unzip the archive and upload it to the game server
+2. **Optional**: Install [MenuManagerCS2](https://github.com/MenusMM/MenuManagerCS2) for enhanced menu system
+   - Download and build MenuManagerCS2
+   - Copy `MenuManagerApi.dll` to `3rd_party/` folder
+3. Clone this repository and build the project
+4. Place `BlockerPasses.dll` in your plugins directory
 
 ### After installing ResourcePrecacher, all the paths you write in the config, write them there as well
 
-# Commands
+## Commands
 `css_bp_reload`, `!bp_reload` - reloads the configuration (only for `@css/root`)
 `css_bp_getpos`, `css_bp_geteye` - gets current position and eye angles (only for `@css/root`)
 `css_bp_menu`, `css_bp` - opens the management menu (only for `@css/root`)
 
-# Config
+## Menu System
 
-```json
-{
-  "Players": 10,      // The number of players after which the passes will open
-  "Message": "...",   // A message stating that the passageways are blocked (all the tags are at the bottom)
-  "Menu": {
-    "EnableMenu": true,                    // Enable/disable the management menu
-    "MenuTitle": "BlockerPasses Management", // Title of the management menu
-    "ShowEntityDetails": true,             // Show detailed entity information
-    "EnablePositionCommands": true         // Enable position/angle commands in menu
-  },
-  "Maps": {
-    "de_mirage": [    // Map name
-      {
-        "ModelPath": "models/props/de_dust/hr_dust/dust_windows/dust_rollupdoor_96x128_surface_lod.vmdl", // Path to the model
-        "Color": [ 30, 144, 255 ],                // RGB color in which the model will be colored
-        "Origin": "-1600.46 -741.124 -172.965",   // Position where the model will be placed
-        "Angles": "0 180 0"                       // Which way the model will be turned
-      },
-      {
-        "ModelPath": "models/props/de_mirage/small_door_b.vmdl",
-        "Color": [ 255, 255, 255 ],
-        "Origin": "588.428 704.941 -136.517",
-        "Angles": "0 270.256 0"
-      },
-      {
-        "ModelPath": "models/props/de_mirage/large_door_c.vmdl",
-        "Color": [ 255, 255, 255 ],
-        "Origin": "-1007.87 -359.812 -323.64",
-        "Angles": "0 270.106 0"
-      },
-      {
-        "ModelPath": "models/props/de_nuke/hr_nuke/chainlink_fence_001/chainlink_fence_001_256_capped.vmdl",
-        "Color": [ 255, 255, 255 ],
-        "Origin": "-961.146 -14.2419 -169.489",
-        "Angles": "0 269.966 0"
-      },
-      {
-        "ModelPath": "models/props/de_nuke/hr_nuke/chainlink_fence_001/chainlink_fence_001_256_capped.vmdl",
-        "Color": [ 255, 255, 255 ],
-        "Origin": "-961.146 -14.2419 -43.0083",
-        "Angles": "0 269.966 0"
-      }            
-    ],       //if you need to add more maps, put a comma. But the last map doesn't need one! (example)
-    "de_dust2": [
-     {
-        "ModelPath": "",
-        "Color": [ 255, 255, 255 ],
-        "Origin": "",
-        "Angles": ""
-     }
-   ]
-  }
-}
-```
+This plugin supports both **MenuManagerCS2** and **CounterStrikeSharp's native ChatMenu** systems, providing flexibility and enhanced functionality.
 
-# Tags
-Colors - `{DEFAULT}`, `{WHITE}`, `{DARKRED}`, `{GREEN}`, `{LIGHTYELLOW}`, `{LIGHTBLUE}`, `{OLIVE}`, `{LIME}`, `{RED}`, `{LIGHTPURPLE}`, `{PURPLE}`, `{GREY}`, `{YELLOW}`, `{GOLD}`, `{SILVER}`, `{BLUE}`, `{DARKBLUE}`, `{BLUEGREY}`, `{MAGENTA}`, `{LIGHTRED}`, `{ORANGE}`
+### MenuManagerCS2 Integration
+- **Enhanced UI**: Better visual design and user experience
+- **Advanced Features**: More menu options and customization
+- **Consistent Interface**: Unified menu system across plugins
+- **Automatic Detection**: Automatically uses MenuManager if available
 
-`{MINPLAYERS}` - minimum number of players
+### Fallback Support
+- **Native ChatMenu**: Falls back to CounterStrikeSharp's built-in menu system
+- **No External Dependencies**: Works out of the box without additional plugins
+- **Reliable Performance**: Stable menu system with proper error handling
+- **Easy Development**: Simple API for menu creation and management
 
-# MenuManager Integration
-
-This plugin now integrates with [MenuManagerCS2](https://github.com/NickFox007/MenuManagerCS2) to provide an enhanced menu system for managing blocker passes.
-
-## Features
-
-- **Management Menu**: Access all plugin functions through an intuitive menu interface
-- **Position Tools**: Get current position and eye angles directly from the menu
-- **Entity Information**: View detailed information about entities on the current map
-- **Configuration Control**: Reload configuration and view current settings
-- **Customizable**: All menu features can be enabled/disabled through configuration
-
-## Menu Commands
-
-- `css_bp_menu` or `css_bp` - Opens the main management menu
-- All existing console commands remain functional
-
-## Menu Options
-
+### Menu Options
 1. **Reload Config** - Reloads the plugin configuration
 2. **Get Position** - Gets current player position and angles (if enabled)
 3. **Get Eye Angles** - Gets current player eye angles (if enabled)
@@ -102,6 +48,7 @@ This plugin now integrates with [MenuManagerCS2](https://github.com/NickFox007/M
 5. **Map Entities** - Shows all entities configured for the current map
 
 ## Requirements
-
-- MenuManagerCS2 must be installed and running
-- MenuManager.dll must be available in the plugin directory
+- CounterStrikeSharp with runtime
+- **Optional**: MenuManagerCS2 for enhanced menu system
+  - Requires `MenuManagerApi.dll` in `3rd_party/` folder
+  - Requires PlayerSettings and AnyBaseLibCS2 plugins

@@ -9,7 +9,6 @@ using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
-using MenuManager;
 
 namespace BlockerPasses;
 
@@ -21,15 +20,25 @@ public class BlockerPasses : BasePlugin
     public override string ModuleVersion => "v0.1.0";
 
     private Config _config = null!;
-    private IMenuApi? _menuManager;
+    private IMenuApi? MenuApi;
 
     public override void Load(bool hotReload)
     {
         _config = LoadConfig();
         RegisterEventHandler<EventRoundStart>(EventRoundStart);
-        
-        // Инициализация MenuManager
-        _menuManager = new MenuApi();
+    }
+
+    public override void OnAllPluginsLoaded(bool hotReload)
+    {
+        try
+        {
+            MenuApi = MenuCapability.Get();
+        }
+        catch (Exception)
+        {
+            MenuApi = null;
+            Logger.LogError("Error while loading MenuManager API");
+        }
     }
 
     [RequiresPermissions("@css/root")]
@@ -108,6 +117,7 @@ public class BlockerPasses : BasePlugin
     // Команда для открытия меню управления блокировщиками
     [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_menu")]
+    [ConsoleCommand("css_bp")]
     public void OnCmdMenu(CCSPlayerController? player, CommandInfo info)
     {
         if (player == null)
@@ -116,22 +126,15 @@ public class BlockerPasses : BasePlugin
             return;
         }
 
-        OpenBlockerPassesMenu(player);
-    }
-
-    // Команда для открытия меню через чат
-    [RequiresPermissions("@css/root")]
-    [CommandHelper(minArgs: 0, usage: "", whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
-    [ConsoleCommand("css_bp")]
-    public void OnCmdBp(CCSPlayerController? player, CommandInfo info)
-    {
-        if (player == null)
+        if (MenuApi != null)
         {
-            info.ReplyToCommand("This command can only be used by players!");
-            return;
+            OpenBlockerPassesMenuManager(player);
         }
-
-        OpenBlockerPassesMenu(player);
+        else
+        {
+            // Fallback to native menu if MenuManager is not available
+            OpenBlockerPassesMenu(player);
+        }
     }
 
     private HookResult EventRoundStart(EventRoundStart @event, GameEventInfo info)
@@ -305,19 +308,13 @@ public class BlockerPasses : BasePlugin
 
     private void OpenBlockerPassesMenu(CCSPlayerController player)
     {
-        if (_menuManager == null)
-        {
-            player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] MenuManager not available!")}");
-            return;
-        }
-
         if (!_config.Menu.EnableMenu)
         {
             player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] Menu is disabled in configuration!")}");
             return;
         }
 
-        var menu = _menuManager.GetMenu(_config.Menu.MenuTitle);
+        var menu = new ChatMenu(_config.Menu.MenuTitle);
         
         // Основные опции меню
         menu.AddMenuOption("Reload Config", (player, option) => {
@@ -380,14 +377,12 @@ public class BlockerPasses : BasePlugin
             OpenMapEntitiesMenu(player);
         });
 
-        menu.DisplayToPlayer(player);
+        menu.Open(player);
     }
 
     private void OpenMapEntitiesMenu(CCSPlayerController player)
     {
-        if (_menuManager == null) return;
-
-        var menu = _menuManager.GetMenu($"Entities for {Server.MapName}");
+        var menu = new ChatMenu($"Entities for {Server.MapName}");
 
         if (_config.Maps.TryGetValue(Server.MapName, out var entities))
         {
@@ -424,7 +419,114 @@ public class BlockerPasses : BasePlugin
             OpenBlockerPassesMenu(player);
         });
 
-        menu.DisplayToPlayer(player);
+        menu.Open(player);
+    }
+
+    private void OpenBlockerPassesMenuManager(CCSPlayerController player)
+    {
+        if (!_config.Menu.EnableMenu)
+        {
+            player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] Menu is disabled in configuration!")}");
+            return;
+        }
+
+        if (MenuApi == null)
+        {
+            player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] MenuManager is not available!")}");
+            return;
+        }
+
+        var menu = MenuApi.CreateMenu(_config.Menu.MenuTitle);
+        
+        // Основные опции меню
+        menu.AddMenuItem("Reload Config", (player, option) => {
+            _config = LoadConfig();
+            player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] Configuration reloaded!")}");
+        });
+
+        if (_config.Menu.EnablePositionCommands)
+        {
+            menu.AddMenuItem("Get Position", (player, option) => {
+                if (!player.PawnIsAlive || player.PlayerPawn.Value == null)
+                {
+                    player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] You must be alive to get position!")}");
+                    return;
+                }
+
+                var pawn = player.PlayerPawn.Value;
+                var pos = pawn.AbsOrigin;
+                var angles = pawn.AbsRotation;
+                
+                var message = $"Position: {pos.X:F2}, {pos.Y:F2}, {pos.Z:F2} | Angles: {angles.X:F2}, {angles.Y:F2}, {angles.Z:F2}";
+                player.PrintToChat($" {ReplaceColorTags("{BLUE}[BlockerPasses] " + message)}");
+                Console.WriteLine($"BP_POS: {message}");
+            });
+
+            menu.AddMenuItem("Get Eye Angles", (player, option) => {
+                if (!player.PawnIsAlive || player.PlayerPawn.Value == null)
+                {
+                    player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] You must be alive to get eye angles!")}");
+                    return;
+                }
+
+                var pawn = player.PlayerPawn.Value;
+                var eyeAngles = pawn.EyeAngles;
+                
+                var message = $"Eye Angles: {eyeAngles.X:F2}, {eyeAngles.Y:F2}, {eyeAngles.Z:F2}";
+                player.PrintToChat($" {ReplaceColorTags("{BLUE}[BlockerPasses] " + message)}");
+                Console.WriteLine($"BP_EYE: {message}");
+            });
+        }
+
+        menu.AddMenuItem("Current Settings", (player, option) => {
+            var message = $"Min Players: {_config.Players} | Map: {Server.MapName}";
+            player.PrintToChat($" {ReplaceColorTags("{BLUE}[BlockerPasses] " + message)}");
+        });
+
+        menu.AddMenuItem("Map Entities", (player, option) => {
+            OpenMapEntitiesMenuManager(player);
+        });
+
+        menu.Open(player);
+    }
+
+    private void OpenMapEntitiesMenuManager(CCSPlayerController player)
+    {
+        if (MenuApi == null) return;
+
+        var menu = MenuApi.CreateMenu($"Entities for {Server.MapName}");
+
+        if (_config.Maps.TryGetValue(Server.MapName, out var entities))
+        {
+            for (int i = 0; i < entities.Count; i++)
+            {
+                var entity = entities[i];
+                var entityName = $"Entity {i + 1}";
+                
+                menu.AddMenuItem(entityName, (player, option) => {
+                    if (_config.Menu.ShowEntityDetails)
+                    {
+                        var info = $"Model: {entity.ModelPath}\n" +
+                                 $"Origin: {entity.Origin}\n" +
+                                 $"Angles: {entity.Angles}\n" +
+                                 $"Color: {string.Join(", ", entity.Color)}\n" +
+                                 $"Scale: {entity.Scale?.ToString() ?? "Default"}";
+                        
+                        player.PrintToChat($" {ReplaceColorTags("{BLUE}[BlockerPasses] " + info)}");
+                    }
+                });
+            }
+        }
+        else
+        {
+            menu.AddMenuItem("No entities configured for this map", (player, option) => {});
+        }
+
+        menu.AddMenuItem("Back", (player, option) => {
+            OpenBlockerPassesMenuManager(player);
+        });
+
+        menu.Open(player);
     }
 }
 

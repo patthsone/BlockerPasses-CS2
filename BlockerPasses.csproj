@@ -10,8 +10,8 @@
       <Reference Include="CounterStrikeSharp.API">
         <HintPath>CounterStrikeSharp.API.dll</HintPath>
       </Reference>
-      <Reference Include="MenuManager">
-        <HintPath>MenuManager.dll</HintPath>
+      <Reference Include="MenuManagerApi">
+        <HintPath>3rd_party\MenuManagerApi.dll</HintPath>
       </Reference>
     </ItemGroup>
 
