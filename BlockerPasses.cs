@@ -5,11 +5,13 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Core.Capabilities;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Logging;
+using MenuManager;
 
 namespace BlockerPasses;
 
@@ -21,7 +23,8 @@ public class BlockerPasses : BasePlugin
     public override string ModuleVersion => "v0.0.5";
 
     private Config _config = null!;
-    private bool _menuManagerAvailable = false;
+    private IMenuApi? _menuApi;
+    private readonly PluginCapability<IMenuApi?> _pluginCapability = new("menu:nfcore");
     private Dictionary<string, Dictionary<string, string>> _translations = new();
 
     public override void Load(bool hotReload)
@@ -33,28 +36,14 @@ public class BlockerPasses : BasePlugin
 
     public override void OnAllPluginsLoaded(bool hotReload)
     {
-        try
+        _menuApi = _pluginCapability.Get();
+        if (_menuApi == null)
         {
-            // Проверяем доступность MenuManager через рефлексию
-            var menuCapabilityType = Type.GetType("MenuCapability");
-            if (menuCapabilityType != null)
-            {
-                var getMethod = menuCapabilityType.GetMethod("Get");
-                if (getMethod != null)
-                {
-                    var menuApi = getMethod.Invoke(null, null);
-                    if (menuApi != null)
-                    {
-                        _menuManagerAvailable = true;
-                        Logger.LogInformation("MenuManager API detected and loaded");
-                    }
-                }
-            }
+            Logger.LogWarning("MenuManager Core not found, falling back to native menus");
         }
-        catch (Exception ex)
+        else
         {
-            _menuManagerAvailable = false;
-            Logger.LogWarning($"MenuManager API not available: {ex.Message}");
+            Logger.LogInformation("MenuManager API detected and loaded");
         }
     }
 
@@ -514,7 +503,7 @@ public class BlockerPasses : BasePlugin
             return;
         }
 
-        if (_menuManagerAvailable)
+        if (_menuApi != null)
         {
             OpenBlockerPassesMenuManager(player);
         }
@@ -1041,8 +1030,14 @@ public class BlockerPasses : BasePlugin
             return;
         }
 
-        // Пока что используем встроенные меню, но с улучшенным интерфейсом
-        var menu = new ChatMenu($"🎯 {_config.Menu.MenuTitle}");
+        if (_menuApi == null)
+        {
+            Logger.LogError("MenuManager API is null, falling back to native menu");
+            OpenBlockerPassesMenu(player);
+            return;
+        }
+
+        var menu = _menuApi.GetMenu($"🎯 {_config.Menu.MenuTitle}");
         
         // Основные опции меню
         menu.AddMenuOption("🔄 Reload Config", (player, option) => {
@@ -1102,7 +1097,14 @@ public class BlockerPasses : BasePlugin
 
     private void OpenMapEntitiesMenuManager(CCSPlayerController player)
     {
-        var menu = new ChatMenu($"🗺️ Entities for {Server.MapName}");
+        if (_menuApi == null)
+        {
+            Logger.LogError("MenuManager API is null, falling back to native menu");
+            OpenMapEntitiesMenu(player);
+            return;
+        }
+
+        var menu = _menuApi.GetMenu($"🗺️ Entities for {Server.MapName}");
 
         if (_config.Maps.TryGetValue(Server.MapName, out var entities))
         {
@@ -1162,7 +1164,14 @@ public class BlockerPasses : BasePlugin
 
     private void OpenTextureManagementMenuManager(CCSPlayerController player)
     {
-        var menu = new ChatMenu($"🎨 {GetTranslation("texture_management")}");
+        if (_menuApi == null)
+        {
+            Logger.LogError("MenuManager API is null, falling back to native menu");
+            OpenTextureManagementMenu(player);
+            return;
+        }
+
+        var menu = _menuApi.GetMenu($"🎨 {GetTranslation("texture_management")}");
 
         menu.AddMenuOption("✨ " + GetTranslation("create_texture"), (player, option) => {
             player.PrintToChat($" {ReplaceColorTags("{YELLOW}[BlockerPasses] " + GetTranslation("texture_create_usage"))}");
