@@ -62,7 +62,7 @@ public class BlockerPasses : BasePlugin
         }
 
         var lang = info.ArgString.ToLower();
-        if (lang != "en" && lang != "ru")
+        if (lang != "en" && lang != "ru" && lang != "uk")
         {
             var message = GetTranslation("invalid_language");
             if (player == null)
@@ -76,7 +76,13 @@ public class BlockerPasses : BasePlugin
         var newConfig = _config with { Language = _config.Language with { CurrentLanguage = lang } };
         _config = newConfig;
 
-        var successMessage = GetTranslation("language_changed");
+        // Получаем сообщение на новом языке
+        var successMessage = lang switch
+        {
+            "ru" => "Язык изменен на русский",
+            "uk" => "Мову змінено на українську",
+            _ => "Language changed to English"
+        };
         if (player == null)
             Console.WriteLine($"[BlockerPasses] {successMessage}");
         else
@@ -516,9 +522,66 @@ public class BlockerPasses : BasePlugin
 
     private void InitializeTranslations()
     {
-        _translations = new Dictionary<string, Dictionary<string, string>>
+        _translations = new Dictionary<string, Dictionary<string, string>>();
+        
+        var translationsPath = Path.Combine(ModuleDirectory, "translations");
+        
+        // Загружаем переводы из файлов
+        var supportedLanguages = new[] { "en", "ru", "uk" };
+        
+        foreach (var lang in supportedLanguages)
         {
-            ["en"] = new Dictionary<string, string>
+            var translationFile = Path.Combine(translationsPath, $"{lang}.json");
+            
+            if (File.Exists(translationFile))
+            {
+                try
+                {
+                    var jsonContent = File.ReadAllText(translationFile);
+                    var translations = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonContent);
+                    
+                    if (translations != null)
+                    {
+                        _translations[lang] = translations;
+                        Logger.LogInformation($"Loaded translations for language: {lang}");
+                    }
+                    else
+                    {
+                        Logger.LogWarning($"Failed to parse translations file: {translationFile}");
+                        LoadDefaultTranslations(lang);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Error loading translations from {translationFile}: {ex.Message}");
+                    LoadDefaultTranslations(lang);
+                }
+            }
+            else
+            {
+                Logger.LogWarning($"Translation file not found: {translationFile}, using defaults");
+                LoadDefaultTranslations(lang);
+            }
+        }
+        
+        // Если не удалось загрузить ни один файл, используем дефолтные переводы
+        if (_translations.Count == 0)
+        {
+            Logger.LogWarning("No translations loaded, using hardcoded defaults");
+            LoadDefaultTranslations("en");
+            LoadDefaultTranslations("ru");
+            LoadDefaultTranslations("uk");
+        }
+    }
+    
+    private void LoadDefaultTranslations(string lang)
+    {
+        if (_translations.ContainsKey(lang))
+            return;
+            
+        _translations[lang] = lang switch
+        {
+            "en" => new Dictionary<string, string>
             {
                 ["menu_title"] = "BlockerPasses Management",
                 ["reload_config"] = "Reload Config",
@@ -535,7 +598,7 @@ public class BlockerPasses : BasePlugin
                 ["no_entities"] = "No entities configured for this map",
                 ["entity_info"] = "Model: {0}\nOrigin: {1}\nAngles: {2}\nColor: {3}\nScale: {4}\nInvisibility: {5}\nQuota: {6}",
                 ["language_changed"] = "Language changed to English",
-                ["invalid_language"] = "Invalid language. Available: en, ru",
+                ["invalid_language"] = "Invalid language. Available: en, ru, uk",
                 ["block_added"] = "Block added successfully",
                 ["block_removed"] = "All blocks removed",
                 ["preview_mode"] = "Preview mode enabled",
@@ -553,7 +616,7 @@ public class BlockerPasses : BasePlugin
                 ["apply_texture"] = "Apply Texture",
                 ["list_textures"] = "List Textures"
             },
-            ["ru"] = new Dictionary<string, string>
+            "ru" => new Dictionary<string, string>
             {
                 ["menu_title"] = "Управление BlockerPasses",
                 ["reload_config"] = "Перезагрузить конфиг",
@@ -570,7 +633,7 @@ public class BlockerPasses : BasePlugin
                 ["no_entities"] = "Для этой карты не настроены сущности",
                 ["entity_info"] = "Модель: {0}\nПозиция: {1}\nУглы: {2}\nЦвет: {3}\nМасштаб: {4}\nПрозрачность: {5}\nЛимит: {6}",
                 ["language_changed"] = "Язык изменен на русский",
-                ["invalid_language"] = "Неверный язык. Доступно: en, ru",
+                ["invalid_language"] = "Неверный язык. Доступно: en, ru, uk",
                 ["block_added"] = "Блок успешно добавлен",
                 ["block_removed"] = "Все блоки удалены",
                 ["preview_mode"] = "Режим предпросмотра включен",
@@ -587,7 +650,43 @@ public class BlockerPasses : BasePlugin
                 ["create_texture"] = "Создать текстуру",
                 ["apply_texture"] = "Применить текстуру",
                 ["list_textures"] = "Список текстур"
-            }
+            },
+            "uk" => new Dictionary<string, string>
+            {
+                ["menu_title"] = "Управління BlockerPasses",
+                ["reload_config"] = "Перезавантажити конфіг",
+                ["get_position"] = "Отримати позицію",
+                ["get_eye_angles"] = "Отримати кути огляду",
+                ["current_settings"] = "Поточні налаштування",
+                ["map_entities"] = "Сущності карти",
+                ["back"] = "Назад",
+                ["config_reloaded"] = "Конфігурацію перезавантажено!",
+                ["must_be_alive"] = "Ви повинні бути живі для отримання позиції!",
+                ["position_info"] = "Позиція: {0} | Кути: {1}",
+                ["eye_angles_info"] = "Кути огляду: {0}",
+                ["settings_info"] = "Мін. гравців: {0} | Карта: {1}",
+                ["no_entities"] = "Для цієї карти не налаштовано сущностей",
+                ["entity_info"] = "Модель: {0}\nПозиція: {1}\nКути: {2}\nКолір: {3}\nМасштаб: {4}\nПрозорість: {5}\nЛіміт: {6}",
+                ["language_changed"] = "Мову змінено на українську",
+                ["invalid_language"] = "Невірна мова. Доступно: en, ru, uk",
+                ["block_added"] = "Блок успішно додано",
+                ["block_removed"] = "Всі блоки видалено",
+                ["preview_mode"] = "Режим попереднього перегляду увімкнено",
+                ["preview_disabled"] = "Режим попереднього перегляду вимкнено",
+                ["texture_create_usage"] = "Використання: css_bp_createtexture <ім'я> <відображаєме_ім'я> [шлях_до_текстури] [категорія]",
+                ["texture_apply_usage"] = "Використання: css_bp_applytexture <індекс_блока> <ім'я_текстури>",
+                ["texture_created"] = "Текстуру '{0}' успішно створено",
+                ["texture_applied"] = "Текстуру '{0}' застосовано до блоку #{1}",
+                ["texture_not_found"] = "Текстуру '{0}' не знайдено",
+                ["invalid_block_index"] = "Невірний індекс блока",
+                ["no_textures_available"] = "Немає доступних текстур",
+                ["available_textures"] = "Доступні текстури:",
+                ["texture_management"] = "Управління текстурами",
+                ["create_texture"] = "Створити текстуру",
+                ["apply_texture"] = "Застосувати текстуру",
+                ["list_textures"] = "Список текстур"
+            },
+            _ => new Dictionary<string, string>()
         };
     }
 
@@ -632,7 +731,7 @@ public class BlockerPasses : BasePlugin
             }
 
             SpawnProp(entity.ModelPath, new[] { color[0], color[1], color[2] },
-                GetVectorFromString(entity.Origin), GetQAngleFromString(entity.Angles), entity.Scale, entity.TextureSettings);
+                GetVectorFromString(entity.Origin), GetQAngleFromString(entity.Angles), entity.Scale, entity.Invisibility, entity.TextureSettings);
         }
 
         Server.PrintToChatAll(
@@ -660,14 +759,19 @@ public class BlockerPasses : BasePlugin
         return default!;
     }
 
-    private void SpawnProp(string modelPath, int[] color, Vector origin, QAngle angles, float? entityScale, TextureSettings? textureSettings = null)
+    private void SpawnProp(string modelPath, int[] color, Vector origin, QAngle angles, float? entityScale, int invisibility = 255, TextureSettings? textureSettings = null)
     {
         var prop = Utilities.CreateEntityByName<CBaseModelEntity>("prop_dynamic_override");
 
         if (prop == null) return;
 
         prop.Collision.SolidType = SolidType_t.SOLID_VPHYSICS;
-        prop.Render = Color.FromArgb(color[0], color[1], color[2]);
+
+        // Применяем прозрачность через альфа-канал
+        // Invisibility: 0 = полностью прозрачный, 255 = полностью видимый
+        var alpha = Math.Clamp(invisibility, 0, 255);
+        prop.Render = Color.FromArgb(alpha, color[0], color[1], color[2]);
+
         prop.Teleport(origin, angles, new Vector(0, 0, 0));
         prop.DispatchSpawn();
         Server.NextFrame(() => prop.SetModel(modelPath));
@@ -681,11 +785,11 @@ public class BlockerPasses : BasePlugin
         // Применяем настройки текстуры, если они есть
         if (textureSettings != null)
         {
-            ApplyTextureToProp(prop, textureSettings);
+            ApplyTextureToProp(prop, textureSettings, alpha);
         }
     }
 
-    private void ApplyTextureToProp(CBaseModelEntity prop, TextureSettings textureSettings)
+    private void ApplyTextureToProp(CBaseModelEntity prop, TextureSettings textureSettings, int alpha = 255)
     {
         // Здесь можно добавить логику применения текстуры к пропу
         // В CS2 это может включать изменение материала или применение пользовательской текстуры
@@ -695,8 +799,17 @@ public class BlockerPasses : BasePlugin
         {
             // Применяем специальный эффект для паттерна 2x2
             // Это может включать изменение цвета или создание визуального эффекта
-            var patternColor = Color.FromArgb(200, 200, 200); // Слегка серый для паттерна
+            var patternColor = Color.FromArgb(alpha, 200, 200, 200); // Слегка серый для паттерна
             prop.Render = patternColor;
+        }
+        else if (textureSettings.TextureColor != null && textureSettings.TextureColor.Length >= 3)
+        {
+            // Применяем цвет текстуры с учетом прозрачности
+            var textureColor = Color.FromArgb(alpha, 
+                textureSettings.TextureColor[0], 
+                textureSettings.TextureColor[1], 
+                textureSettings.TextureColor[2]);
+            prop.Render = textureColor;
         }
         
         // Если используется пользовательская текстура
@@ -1055,9 +1168,9 @@ public class BlockerPasses : BasePlugin
                 }
 
                 var pawn = player.PlayerPawn.Value;
-                var pos = pawn.AbsOrigin;
-                var angles = pawn.AbsRotation;
-                
+                var pos = pawn.AbsOrigin!;
+                var angles = pawn.AbsRotation!;
+
                 var message = $"Position: {pos.X:F2}, {pos.Y:F2}, {pos.Z:F2} | Angles: {angles.X:F2}, {angles.Y:F2}, {angles.Z:F2}";
                 player.PrintToChat($" {ReplaceColorTags("{BLUE}[BlockerPasses] " + message)}");
                 Console.WriteLine($"BP_POS: {message}");
@@ -1071,8 +1184,8 @@ public class BlockerPasses : BasePlugin
                 }
 
                 var pawn = player.PlayerPawn.Value;
-                var eyeAngles = pawn.EyeAngles;
-                
+                var eyeAngles = pawn.EyeAngles!;
+
                 var message = $"Eye Angles: {eyeAngles.X:F2}, {eyeAngles.Y:F2}, {eyeAngles.Z:F2}";
                 player.PrintToChat($" {ReplaceColorTags("{BLUE}[BlockerPasses] " + message)}");
                 Console.WriteLine($"BP_EYE: {message}");

@@ -17,6 +17,13 @@
 
     <ItemGroup>
       <PackageReference Include="CounterStrikeSharp.API" Version="*" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="translations\**\*.*">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>
