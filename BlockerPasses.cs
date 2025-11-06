@@ -20,7 +20,7 @@ public class BlockerPasses : BasePlugin
 {
     public override string ModuleAuthor => "PattHs";
     public override string ModuleName => "Blocker Passes";
-    public override string ModuleVersion => "v0.0.5";
+    public override string ModuleVersion => "v0.0.6";
 
     private Config _config = null!;
     private IMenuApi? _menuApi;
@@ -75,6 +75,9 @@ public class BlockerPasses : BasePlugin
         // Update config with new language
         var newConfig = _config with { Language = _config.Language with { CurrentLanguage = lang } };
         _config = newConfig;
+
+        // Перезагружаем переводы для нового языка
+        InitializeTranslations();
 
         // Получаем сообщение на новом языке
         var successMessage = lang switch
