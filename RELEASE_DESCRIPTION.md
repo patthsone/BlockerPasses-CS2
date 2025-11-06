@@ -88,3 +88,4 @@ css_bp_createtexture server_logo "Server Logo" materials/logos/server_logo.vmt b
 **Full changelog and detailed documentation available in the repository!**
 
 **Thanks for using BlockerPasses-CS2! 🎉**
+
