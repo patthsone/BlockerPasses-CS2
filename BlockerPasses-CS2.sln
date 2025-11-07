@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlockerPasses", "BlockerPasses.csproj", "{C7301CE4-A615-3A61-19E7-EB901D685CE4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C7301CE4-A615-3A61-19E7-EB901D685CE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7301CE4-A615-3A61-19E7-EB901D685CE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7301CE4-A615-3A61-19E7-EB901D685CE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7301CE4-A615-3A61-19E7-EB901D685CE4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1A0724CF-0E58-47DC-82D1-A78267E901CE}
+	EndGlobalSection
+EndGlobal
