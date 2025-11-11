@@ -72,15 +72,12 @@ public class BlockerPasses : BasePlugin
             return;
         }
 
-        // Update config with new language
-        var newConfig = _config with { Language = _config.Language with { CurrentLanguage = lang } };
+                var newConfig = _config with { Language = _config.Language with { CurrentLanguage = lang } };
         _config = newConfig;
 
-        // Перезагружаем переводы для нового языка
-        InitializeTranslations();
+                InitializeTranslations();
 
-        // Получаем сообщение на новом языке
-        var successMessage = lang switch
+                var successMessage = lang switch
         {
             "ru" => "Язык изменен на русский",
             "uk" => "Мову змінено на українську",
@@ -107,8 +104,7 @@ public class BlockerPasses : BasePlugin
             player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + msg)}");
     }
 
-    // Новая команда для получения позиции
-    [RequiresPermissions("@css/root")]
+        [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_getpos")]
     public void OnCmdGetPos(CCSPlayerController? player, CommandInfo info)
     {
@@ -126,8 +122,7 @@ public class BlockerPasses : BasePlugin
         var origin = pawn.AbsOrigin!;
         var angles = pawn.AbsRotation!;
 
-        // Форматируем координаты для конфига
-        var originStr = $"{origin.X.ToString("F2", CultureInfo.InvariantCulture)} " +
+                var originStr = $"{origin.X.ToString("F2", CultureInfo.InvariantCulture)} " +
                        $"{origin.Y.ToString("F2", CultureInfo.InvariantCulture)} " +
                        $"{origin.Z.ToString("F2", CultureInfo.InvariantCulture)}";
 
@@ -135,8 +130,7 @@ public class BlockerPasses : BasePlugin
                        $"{angles.Y.ToString("F2", CultureInfo.InvariantCulture)} " +
                        $"{angles.Z.ToString("F2", CultureInfo.InvariantCulture)}";
 
-        // Создаем шаблон для добавления блока
-        var template = $@"
+                var template = $@"
 {{
     ""ModelPath"": ""models/props/de_dust/hr_dust/dust_windows/dust_rollupdoor_96x128_surface_lod.vmdl"",
     ""Color"": [255, 255, 255],
@@ -148,8 +142,7 @@ public class BlockerPasses : BasePlugin
     ""Name"": ""Block_{Server.MapName}_{DateTime.Now:HHmmss}""
 }}";
 
-        // Выводим в консоль и чат
-        var message = GetTranslation("position_info", originStr, anglesStr);
+                var message = GetTranslation("position_info", originStr, anglesStr);
         
         player.PrintToChat($" {ReplaceColorTags("{BLUE}[BlockerPasses] " + message)}");
         player.PrintToChat($" {ReplaceColorTags("{YELLOW}[BlockerPasses] Template:")}");
@@ -159,8 +152,7 @@ public class BlockerPasses : BasePlugin
         Console.WriteLine($"BP_TEMPLATE: {template}");
     }
 
-    // Дополнительная команда для получения позиции с прицелом (куда смотрит игрок)
-    [RequiresPermissions("@css/root")]
+        [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_geteye")]
     public void OnCmdGetEye(CCSPlayerController? player, CommandInfo info)
     {
@@ -184,8 +176,7 @@ public class BlockerPasses : BasePlugin
         Console.WriteLine($"BP_EYE: {message}");
     }
 
-    // Команда для добавления блока
-    [RequiresPermissions("@css/root")]
+        [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_add")]
     public void OnCmdAdd(CCSPlayerController? player, CommandInfo info)
     {
@@ -203,15 +194,13 @@ public class BlockerPasses : BasePlugin
         var origin = pawn.AbsOrigin!;
         var angles = pawn.AbsRotation!;
 
-        // Параметры по умолчанию
-        var invisibility = 255;
+                var invisibility = 255;
         var quota = 0;
         var scale = 1.0f;
         var color = new int[] { 255, 255, 255 };
         var modelPath = "models/props/de_dust/hr_dust/dust_windows/dust_rollupdoor_96x128_surface_lod.vmdl";
 
-        // Парсим аргументы команды
-        if (info.ArgCount >= 2)
+                if (info.ArgCount >= 2)
         {
             if (int.TryParse(info.ArgByIndex(1), out var invis))
                 invisibility = Math.Clamp(invis, 0, 255);
@@ -222,8 +211,7 @@ public class BlockerPasses : BasePlugin
                 quota = Math.Max(0, quotaVal);
         }
 
-        // Форматируем координаты
-        var originStr = $"{origin.X.ToString("F2", CultureInfo.InvariantCulture)} " +
+                var originStr = $"{origin.X.ToString("F2", CultureInfo.InvariantCulture)} " +
                        $"{origin.Y.ToString("F2", CultureInfo.InvariantCulture)} " +
                        $"{origin.Z.ToString("F2", CultureInfo.InvariantCulture)}";
 
@@ -231,8 +219,7 @@ public class BlockerPasses : BasePlugin
                        $"{angles.Y.ToString("F2", CultureInfo.InvariantCulture)} " +
                        $"{angles.Z.ToString("F2", CultureInfo.InvariantCulture)}";
 
-        // Создаем новый блок
-        var newBlock = new BlockEntity
+                var newBlock = new BlockEntity
         {
             ModelPath = modelPath,
             Color = color,
@@ -244,23 +231,20 @@ public class BlockerPasses : BasePlugin
             Name = $"Block_{Server.MapName}_{DateTime.Now:HHmmss}"
         };
 
-        // Добавляем блок в конфиг
-        if (!_config.Maps.ContainsKey(Server.MapName))
+                if (!_config.Maps.ContainsKey(Server.MapName))
         {
             _config.Maps[Server.MapName] = new List<BlockEntity>();
         }
         _config.Maps[Server.MapName].Add(newBlock);
 
-        // Сохраняем конфиг
-        SaveConfig(_config);
+                SaveConfig(_config);
 
         var message = GetTranslation("block_added");
         player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + message)}");
         Console.WriteLine($"BP_ADD: Block added to {Server.MapName} with invisibility={invisibility}, quota={quota}");
     }
 
-    // Команда для просмотра всех блоков на карте
-    [RequiresPermissions("@css/root")]
+        [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_list")]
     public void OnCmdList(CCSPlayerController? player, CommandInfo info)
     {
@@ -287,8 +271,7 @@ public class BlockerPasses : BasePlugin
         Console.WriteLine($"BP_LIST: Listed {blocks.Count} blocks for {Server.MapName}");
     }
 
-    // Команда для удаления всех блоков на карте
-    [RequiresPermissions("@css/root")]
+        [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_removeall")]
     public void OnCmdRemoveAll(CCSPlayerController? player, CommandInfo info)
     {
@@ -305,16 +288,14 @@ public class BlockerPasses : BasePlugin
         var count = _config.Maps[Server.MapName].Count;
         _config.Maps[Server.MapName].Clear();
         
-        // Сохраняем конфиг
-        SaveConfig(_config);
+                SaveConfig(_config);
 
         var message = GetTranslation("block_removed");
         player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + message)} ({count} blocks)");
         Console.WriteLine($"BP_REMOVEALL: Removed {count} blocks from {Server.MapName}");
     }
 
-    // Команда для предварительного просмотра блоков
-    [RequiresPermissions("@css/root")]
+        [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_preview")]
     public void OnCmdPreview(CCSPlayerController? player, CommandInfo info)
     {
@@ -324,14 +305,12 @@ public class BlockerPasses : BasePlugin
             return;
         }
 
-        // Переключаем режим предпросмотра (пока что просто сообщение)
-        var message = GetTranslation("preview_mode");
+                var message = GetTranslation("preview_mode");
         player.PrintToChat($" {ReplaceColorTags("{CYAN}[BlockerPasses] " + message)}");
         Console.WriteLine($"BP_PREVIEW: Preview mode toggled for {player.PlayerName}");
     }
 
-    // Команда для создания текстуры
-    [RequiresPermissions("@css/root")]
+        [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_createtexture")]
     public void OnCmdCreateTexture(CCSPlayerController? player, CommandInfo info)
     {
@@ -350,8 +329,7 @@ public class BlockerPasses : BasePlugin
         var texturePath = info.ArgCount >= 4 ? info.ArgByIndex(3) : null;
         var category = info.ArgCount >= 5 ? info.ArgByIndex(4) : "custom";
 
-        // Создаем новую текстуру
-        var newTexture = new TextureEntity
+                var newTexture = new TextureEntity
         {
             Name = textureName,
             DisplayName = displayName,
@@ -362,8 +340,7 @@ public class BlockerPasses : BasePlugin
             Category = category
         };
 
-        // Добавляем текстуру в конфиг
-        var newConfig = _config with 
+                var newConfig = _config with 
         { 
             AvailableTextures = new Dictionary<string, TextureEntity>(_config.AvailableTextures) 
             { 
@@ -372,8 +349,7 @@ public class BlockerPasses : BasePlugin
         };
         _config = newConfig;
 
-        // Сохраняем конфиг
-        SaveConfig(_config);
+                SaveConfig(_config);
 
         var successMessage = GetTranslation("texture_created", textureName);
         if (player == null)
@@ -382,8 +358,7 @@ public class BlockerPasses : BasePlugin
             player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + successMessage)}");
     }
 
-    // Команда для применения текстуры к блоку
-    [RequiresPermissions("@css/root")]
+        [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_applytexture")]
     public void OnCmdApplyTexture(CCSPlayerController? player, CommandInfo info)
     {
@@ -429,8 +404,7 @@ public class BlockerPasses : BasePlugin
             return;
         }
 
-        // Применяем текстуру к блоку
-        var blocks = _config.Maps[Server.MapName].ToList();
+                var blocks = _config.Maps[Server.MapName].ToList();
         var block = blocks[blockIndex - 1];
         
         var textureSettings = new TextureSettings
@@ -459,8 +433,7 @@ public class BlockerPasses : BasePlugin
         };
         _config = newConfig;
 
-        // Сохраняем конфиг
-        SaveConfig(_config);
+                SaveConfig(_config);
 
         var successMessage = GetTranslation("texture_applied", textureName, blockIndex);
         if (player == null)
@@ -469,8 +442,7 @@ public class BlockerPasses : BasePlugin
             player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + successMessage)}");
     }
 
-    // Команда для просмотра доступных текстур
-    [RequiresPermissions("@css/root")]
+        [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_textures")]
     public void OnCmdListTextures(CCSPlayerController? player, CommandInfo info)
     {
@@ -500,8 +472,7 @@ public class BlockerPasses : BasePlugin
         }
     }
 
-    // Команда для открытия меню управления блокировщиками
-    [RequiresPermissions("@css/root")]
+        [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_menu")]
     [ConsoleCommand("css_bp")]
     public void OnCmdMenu(CCSPlayerController? player, CommandInfo info)
@@ -518,8 +489,7 @@ public class BlockerPasses : BasePlugin
         }
         else
         {
-            // Fallback to native menu if MenuManager is not available
-            OpenBlockerPassesMenu(player);
+                        OpenBlockerPassesMenu(player);
         }
     }
 
@@ -529,8 +499,7 @@ public class BlockerPasses : BasePlugin
         
         var translationsPath = Path.Combine(ModuleDirectory, "translations");
         
-        // Загружаем переводы из файлов
-        var supportedLanguages = new[] { "en", "ru", "uk" };
+                var supportedLanguages = new[] { "en", "ru", "uk" };
         
         foreach (var lang in supportedLanguages)
         {
@@ -567,8 +536,7 @@ public class BlockerPasses : BasePlugin
             }
         }
         
-        // Если не удалось загрузить ни один файл, используем дефолтные переводы
-        if (_translations.Count == 0)
+                if (_translations.Count == 0)
         {
             Logger.LogWarning("No translations loaded, using hardcoded defaults");
             LoadDefaultTranslations("en");
@@ -704,14 +672,12 @@ public class BlockerPasses : BasePlugin
             return args.Length > 0 ? string.Format(translation, args) : translation;
         }
 
-        // Fallback to English
-        if (_translations["en"].TryGetValue(key, out var englishTranslation))
+                if (_translations["en"].TryGetValue(key, out var englishTranslation))
         {
             return args.Length > 0 ? string.Format(englishTranslation, args) : englishTranslation;
         }
 
-        return key; // Return key if no translation found
-    }
+        return key;     }
 
     private HookResult EventRoundStart(EventRoundStart @event, GameEventInfo info)
     {
@@ -727,8 +693,7 @@ public class BlockerPasses : BasePlugin
         {
             var color = entity.Color;
             
-            // Если у блока есть настройки текстуры, используем их цвет
-            if (entity.TextureSettings != null)
+                        if (entity.TextureSettings != null)
             {
                 color = entity.TextureSettings.TextureColor;
             }
@@ -770,9 +735,7 @@ public class BlockerPasses : BasePlugin
 
         prop.Collision.SolidType = SolidType_t.SOLID_VPHYSICS;
 
-        // Применяем прозрачность через альфа-канал
-        // Invisibility: 0 = полностью прозрачный, 255 = полностью видимый
-        var alpha = Math.Clamp(invisibility, 0, 255);
+                        var alpha = Math.Clamp(invisibility, 0, 255);
         prop.Render = Color.FromArgb(alpha, color[0], color[1], color[2]);
 
         prop.Teleport(origin, angles, new Vector(0, 0, 0));
@@ -785,8 +748,7 @@ public class BlockerPasses : BasePlugin
         if (entityScale != null && entityScale != 0.0f)
             bodyComponent.SceneNode.GetSkeletonInstance().Scale = entityScale.Value;
 
-        // Применяем настройки текстуры, если они есть
-        if (textureSettings != null)
+                if (textureSettings != null)
         {
             ApplyTextureToProp(prop, textureSettings, alpha);
         }
@@ -794,33 +756,23 @@ public class BlockerPasses : BasePlugin
 
     private void ApplyTextureToProp(CBaseModelEntity prop, TextureSettings textureSettings, int alpha = 255)
     {
-        // Здесь можно добавить логику применения текстуры к пропу
-        // В CS2 это может включать изменение материала или применение пользовательской текстуры
-        
-        // Для паттерна 2x2 можно создать специальный эффект
-        if (textureSettings.TextureName == "2x2_pattern")
+                        
+                if (textureSettings.TextureName == "2x2_pattern")
         {
-            // Применяем специальный эффект для паттерна 2x2
-            // Это может включать изменение цвета или создание визуального эффекта
-            var patternColor = Color.FromArgb(alpha, 200, 200, 200); // Слегка серый для паттерна
-            prop.Render = patternColor;
+                                    var patternColor = Color.FromArgb(alpha, 200, 200, 200);             prop.Render = patternColor;
         }
         else if (textureSettings.TextureColor != null && textureSettings.TextureColor.Length >= 3)
         {
-            // Применяем цвет текстуры с учетом прозрачности
-            var textureColor = Color.FromArgb(alpha, 
+                        var textureColor = Color.FromArgb(alpha, 
                 textureSettings.TextureColor[0], 
                 textureSettings.TextureColor[1], 
                 textureSettings.TextureColor[2]);
             prop.Render = textureColor;
         }
         
-        // Если используется пользовательская текстура
-        if (textureSettings.UseCustomTexture && !string.IsNullOrEmpty(textureSettings.CustomTexturePath))
+                if (textureSettings.UseCustomTexture && !string.IsNullOrEmpty(textureSettings.CustomTexturePath))
         {
-            // Здесь можно добавить логику загрузки и применения пользовательской текстуры
-            // Пока что просто логируем
-            Logger.LogInformation($"Applying custom texture: {textureSettings.CustomTexturePath}");
+                                    Logger.LogInformation($"Applying custom texture: {textureSettings.CustomTexturePath}");
         }
     }
 
@@ -1028,8 +980,7 @@ public class BlockerPasses : BasePlugin
 
         var menu = new ChatMenu(_config.Menu.MenuTitle);
         
-        // Основные опции меню
-        menu.AddMenuOption("Reload Config", (player, option) => {
+                menu.AddMenuOption("Reload Config", (player, option) => {
             _config = LoadConfig();
             player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] Configuration reloaded!")}");
         });
@@ -1155,8 +1106,7 @@ public class BlockerPasses : BasePlugin
 
         var menu = _menuApi.GetMenu($"🎯 {_config.Menu.MenuTitle}");
         
-        // Основные опции меню
-        menu.AddMenuOption("🔄 Reload Config", (player, option) => {
+                menu.AddMenuOption("🔄 Reload Config", (player, option) => {
             _config = LoadConfig();
             player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] Configuration reloaded!")}");
         });
@@ -1341,12 +1291,7 @@ public record BlockEntity
     public required string Origin { get; init; }
     public required string Angles { get; init; }
     public float? Scale { get; init; }
-    public int Invisibility { get; init; } = 255; // 0-255, где 0 = полностью прозрачный, 255 = полностью видимый
-    public int Quota { get; init; } = 0; // Лимит игроков, 0 = без ограничений
-    public string? Name { get; init; } // Имя блока для идентификации
-    public string? TexturePath { get; init; } // Путь к текстуре (опционально)
-    public TextureSettings? TextureSettings { get; init; } // Настройки текстуры
-}
+    public int Invisibility { get; init; } = 255;     public int Quota { get; init; } = 0;     public string? Name { get; init; }     public string? TexturePath { get; init; }     public TextureSettings? TextureSettings { get; init; } }
 
 public record TextureSettings
 {
@@ -1357,8 +1302,7 @@ public record TextureSettings
     public float TextureOffsetY { get; init; } = 0.0f;
     public float TextureRotation { get; init; } = 0.0f;
     public bool UseCustomTexture { get; init; } = false;
-    public string? CustomTexturePath { get; init; } // Путь к пользовательской текстуре
-}
+    public string? CustomTexturePath { get; init; } }
 
 public record TextureEntity
 {
