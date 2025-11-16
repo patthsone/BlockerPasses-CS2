@@ -20,7 +20,7 @@ public class BlockerPasses : BasePlugin
 {
     public override string ModuleAuthor => "PattHs";
     public override string ModuleName => "Blocker Passes";
-    public override string ModuleVersion => "v0.0.6";
+    public override string ModuleVersion => "v0.0.8";
 
     private Config _config = null!;
     private IMenuApi? _menuApi;
@@ -259,15 +259,28 @@ public class BlockerPasses : BasePlugin
         }
 
         var blocks = _config.Maps[Server.MapName];
-        player.PrintToChat($" {ReplaceColorTags("{BLUE}[BlockerPasses] Blocks on {Server.MapName}:")}");
-        
-        for (int i = 0; i < blocks.Count; i++)
+    
+        if (player == null)
         {
-            var block = blocks[i];
-            var blockInfo = $"#{i + 1}: {block.Name ?? $"Block_{i + 1}"} | Invisibility: {block.Invisibility} | Quota: {block.Quota}";
-            player.PrintToChat($" {ReplaceColorTags("{WHITE}" + blockInfo)}");
+            Console.WriteLine($"[BlockerPasses] Blocks on {Server.MapName}:");
+            for (int i = 0; i < blocks.Count; i++)
+            {
+                var block = blocks[i];
+                var blockInfo = $"#{i + 1}: {block.Name ?? $"Block_{i + 1}"} | Invisibility: {block.Invisibility} | Quota: {block.Quota}";
+                Console.WriteLine($"[BlockerPasses] {blockInfo}");
+            }
         }
-        
+        else
+        {
+            player.PrintToChat($" {ReplaceColorTags("{BLUE}[BlockerPasses] Blocks on {Server.MapName}:")}");
+            for (int i = 0; i < blocks.Count; i++)
+            {
+                var block = blocks[i];
+                var blockInfo = $"#{i + 1}: {block.Name ?? $"Block_{i + 1}"} | Invisibility: {block.Invisibility} | Quota: {block.Quota}";
+                player.PrintToChat($" {ReplaceColorTags("{WHITE}" + blockInfo)}");
+            }
+        }
+    
         Console.WriteLine($"BP_LIST: Listed {blocks.Count} blocks for {Server.MapName}");
     }
 
@@ -289,10 +302,17 @@ public class BlockerPasses : BasePlugin
         _config.Maps[Server.MapName].Clear();
         
                 SaveConfig(_config);
-
-        var message = GetTranslation("block_removed");
-        player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + message)} ({count} blocks)");
-        Console.WriteLine($"BP_REMOVEALL: Removed {count} blocks from {Server.MapName}");
+            
+                var message = GetTranslation("block_removed");
+                if (player == null)
+                {
+                    Console.WriteLine($"[BlockerPasses] {message} ({count} blocks)");
+                }
+                else
+                {
+                    player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + message)} ({count} blocks)");
+                }
+                Console.WriteLine($"BP_REMOVEALL: Removed {count} blocks from {Server.MapName}");
     }
 
         [RequiresPermissions("@css/root")]
@@ -682,7 +702,7 @@ public class BlockerPasses : BasePlugin
     private HookResult EventRoundStart(EventRoundStart @event, GameEventInfo info)
     {
         var playersCount = Utilities.GetPlayers()
-            .Where(u => u.PlayerPawn.Value != null && u.TeamNum != (int)CsTeam.None &&
+            .Where(u => u.PawnIsAlive && u.PlayerPawn.Value != null && u.TeamNum != (int)CsTeam.None &&
                         u.TeamNum != (int)CsTeam.Spectator && u.PlayerPawn.Value.IsValid).ToList();
 
         if (playersCount.Count >= _config.Players) return HookResult.Continue;
@@ -802,6 +822,7 @@ public class BlockerPasses : BasePlugin
     {
         var config = new Config
         {
+            Version = "1.1",
             Players = 6,
             Message =
                 "[{BLUE} BlockerPasses {DEFAULT}] Some passageways are blocked. Unblocking requires {RED}{MINPLAYERS}{DEFAULT} players",
@@ -1261,6 +1282,7 @@ public class BlockerPasses : BasePlugin
 
 public record Config
 {
+    public string Version { get; init; } = "1.0";
     public int Players { get; init; }
     public required string Message { get; init; }
     public Dictionary<string, List<BlockEntity>> Maps { get; init; } = null!;

@@ -1,4 +1,5 @@
 {
+  "Version": "1.1",
   "Players": 6,
   "Message": "[{BLUE} BlockerPasses {DEFAULT}] Some passageways are blocked. Unblocking requires {RED}{MINPLAYERS}{DEFAULT} players",
   "Menu": {
@@ -6,6 +7,10 @@
     "MenuTitle": "BlockerPasses Management",
     "ShowEntityDetails": true,
     "EnablePositionCommands": true
+  },
+  "Language": {
+    "CurrentLanguage": "en",
+    "Translations": {}
   },
   "AvailableTextures": {
     "white_block": {
