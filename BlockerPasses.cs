@@ -778,15 +778,15 @@ public class BlockerPasses : BasePlugin
 
         prop.Collision.SolidType = SolidType_t.SOLID_VPHYSICS;
 
-                         var alpha = Math.Clamp(invisibility, 0, 255);
+                          var alpha = Math.Clamp(invisibility, 0, 255);
         prop.Render = Color.FromArgb(alpha, color[0], color[1], color[2]);
-
-        prop.SetModel(modelPath);
-        Logger.LogInformation($"[BlockerPasses] Set model '{modelPath}' before dispatch spawn");
 
         prop.Teleport(origin, angles, new Vector(0, 0, 0));
         prop.DispatchSpawn();
         Logger.LogInformation($"[BlockerPasses] Dispatched spawn for prop with model '{modelPath}'");
+
+        prop.SetModel(modelPath);
+        Logger.LogInformation($"[BlockerPasses] Set model '{modelPath}' after dispatch spawn");
 
         var bodyComponent = prop.CBodyComponent;
         if (bodyComponent is not { SceneNode: not null }) return;
@@ -794,7 +794,7 @@ public class BlockerPasses : BasePlugin
         if (entityScale != null && entityScale != 0.0f)
             bodyComponent.SceneNode.GetSkeletonInstance().Scale = entityScale.Value;
 
-                if (textureSettings != null)
+                 if (textureSettings != null)
         {
             ApplyTextureToProp(prop, textureSettings, alpha);
         }
