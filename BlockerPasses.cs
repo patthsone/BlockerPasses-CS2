@@ -709,11 +709,22 @@ public class BlockerPasses : BasePlugin
 
         if (!_config.Maps.TryGetValue(Server.MapName, out var entitiesMap)) return HookResult.Continue;
 
+        // Precache all unique models for this map
+        var uniqueModels = entitiesMap.Select(e => e.ModelPath).Distinct();
+        foreach (var model in uniqueModels)
+        {
+            if (!string.IsNullOrEmpty(model))
+            {
+                Server.PrecacheModel(model);
+                Logger.LogInformation($"[BlockerPasses] Precaching model: {model}");
+            }
+        }
+
         foreach (var entity in entitiesMap)
         {
             var color = entity.Color;
-            
-                        if (entity.TextureSettings != null)
+
+                         if (entity.TextureSettings != null)
             {
                 color = entity.TextureSettings.TextureColor;
             }
