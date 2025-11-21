@@ -797,18 +797,18 @@ public class BlockerPasses : BasePlugin
             prop.SetModel(modelPath);
             Logger.LogInformation($"[BlockerPasses] Set model '{modelPath}' after dispatch spawn in next frame");
             File.AppendAllText(logPath, $"[{DateTime.Now}] Set model '{modelPath}' after dispatch spawn in next frame\n");
+
+            var bodyComponent = prop.CBodyComponent;
+            if (bodyComponent is not { SceneNode: not null }) return;
+
+            if (entityScale != null && entityScale != 0.0f)
+                bodyComponent.SceneNode.GetSkeletonInstance().Scale = entityScale.Value;
+
+            if (textureSettings != null)
+            {
+                ApplyTextureToProp(prop, textureSettings, alpha);
+            }
         });
-
-        var bodyComponent = prop.CBodyComponent;
-        if (bodyComponent is not { SceneNode: not null }) return;
-
-        if (entityScale != null && entityScale != 0.0f)
-            bodyComponent.SceneNode.GetSkeletonInstance().Scale = entityScale.Value;
-
-                 if (textureSettings != null)
-        {
-            ApplyTextureToProp(prop, textureSettings, alpha);
-        }
     }
 
     private void ApplyTextureToProp(CBaseModelEntity prop, TextureSettings textureSettings, int alpha = 255)
