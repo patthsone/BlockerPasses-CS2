@@ -709,7 +709,6 @@ public class BlockerPasses : BasePlugin
 
         if (!_config.Maps.TryGetValue(Server.MapName, out var entitiesMap)) return HookResult.Continue;
 
-        // Precache all unique models for this map to support Workshop addons
         var uniqueModels = entitiesMap.Select(e => e.ModelPath).Distinct();
         foreach (var model in uniqueModels)
         {
