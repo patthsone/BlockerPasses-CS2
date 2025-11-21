@@ -760,7 +760,9 @@ public class BlockerPasses : BasePlugin
 
     private void SpawnProp(string modelPath, int[] color, Vector origin, QAngle angles, float? entityScale, int invisibility = 255, TextureSettings? textureSettings = null)
     {
-        var logPath = Path.Combine(ModuleDirectory, "logs", "spawn_log.txt");
+        var logsDir = Path.Combine(ModuleDirectory, "logs");
+        Directory.CreateDirectory(logsDir);
+        var logPath = Path.Combine(logsDir, "spawn_log.txt");
         File.AppendAllText(logPath, $"[{DateTime.Now}] Attempting to spawn prop with model: '{modelPath}' at {origin}\n");
 
         Logger.LogInformation($"[BlockerPasses] Attempting to spawn prop with model: '{modelPath}' at {origin}");
