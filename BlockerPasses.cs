@@ -787,14 +787,17 @@ public class BlockerPasses : BasePlugin
                           var alpha = Math.Clamp(invisibility, 0, 255);
         prop.Render = Color.FromArgb(alpha, color[0], color[1], color[2]);
 
-        prop.SetModel(modelPath);
-        Logger.LogInformation($"[BlockerPasses] Set model '{modelPath}' before dispatch spawn");
-        File.AppendAllText(logPath, $"[{DateTime.Now}] Set model '{modelPath}' before dispatch spawn\n");
-
         prop.Teleport(origin, angles, new Vector(0, 0, 0));
         prop.DispatchSpawn();
         Logger.LogInformation($"[BlockerPasses] Dispatched spawn for prop with model '{modelPath}'");
         File.AppendAllText(logPath, $"[{DateTime.Now}] Dispatched spawn for prop with model '{modelPath}'\n");
+
+        Server.NextFrame(() =>
+        {
+            prop.SetModel(modelPath);
+            Logger.LogInformation($"[BlockerPasses] Set model '{modelPath}' after dispatch spawn in next frame");
+            File.AppendAllText(logPath, $"[{DateTime.Now}] Set model '{modelPath}' after dispatch spawn in next frame\n");
+        });
 
         var bodyComponent = prop.CBodyComponent;
         if (bodyComponent is not { SceneNode: not null }) return;
