@@ -1,0 +1,23 @@
+# Binaries
+bin/
+obj/
+
+# Build outputs
+*.dll
+*.exe
+*.pdb
+
+# Logs
+*.log
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp

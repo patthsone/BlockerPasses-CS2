@@ -749,18 +749,33 @@ public class BlockerPasses : BasePlugin
 
     private void SpawnProp(string modelPath, int[] color, Vector origin, QAngle angles, float? entityScale, int invisibility = 255, TextureSettings? textureSettings = null)
     {
+        Logger.LogInformation($"[BlockerPasses] Attempting to spawn prop with model: '{modelPath}' at {origin}");
+
+        if (string.IsNullOrEmpty(modelPath))
+        {
+            Logger.LogWarning("[BlockerPasses] Empty model path provided, skipping prop spawn");
+            return;
+        }
+
         var prop = Utilities.CreateEntityByName<CBaseModelEntity>("prop_dynamic_override");
 
-        if (prop == null) return;
+        if (prop == null)
+        {
+            Logger.LogError("[BlockerPasses] Failed to create prop_dynamic_override entity");
+            return;
+        }
 
         prop.Collision.SolidType = SolidType_t.SOLID_VPHYSICS;
 
-                        var alpha = Math.Clamp(invisibility, 0, 255);
+                         var alpha = Math.Clamp(invisibility, 0, 255);
         prop.Render = Color.FromArgb(alpha, color[0], color[1], color[2]);
+
+        prop.SetModel(modelPath);
+        Logger.LogInformation($"[BlockerPasses] Set model '{modelPath}' before dispatch spawn");
 
         prop.Teleport(origin, angles, new Vector(0, 0, 0));
         prop.DispatchSpawn();
-        Server.NextFrame(() => prop.SetModel(modelPath));
+        Logger.LogInformation($"[BlockerPasses] Dispatched spawn for prop with model '{modelPath}'");
 
         var bodyComponent = prop.CBodyComponent;
         if (bodyComponent is not { SceneNode: not null }) return;
