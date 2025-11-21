@@ -767,7 +767,7 @@ public class BlockerPasses : BasePlugin
             return;
         }
 
-        var prop = Utilities.CreateEntityByName<CBaseModelEntity>("prop_dynamic_override");
+        var prop = Utilities.CreateEntityByName<CBaseModelEntity>("prop_dynamic");
 
         if (prop == null)
         {
