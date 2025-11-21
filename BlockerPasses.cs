@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using System.Globalization;
+using System.IO;
 using System.Text.Json;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
@@ -759,11 +760,15 @@ public class BlockerPasses : BasePlugin
 
     private void SpawnProp(string modelPath, int[] color, Vector origin, QAngle angles, float? entityScale, int invisibility = 255, TextureSettings? textureSettings = null)
     {
+        var logPath = Path.Combine(ModuleDirectory, "logs", "spawn_log.txt");
+        File.AppendAllText(logPath, $"[{DateTime.Now}] Attempting to spawn prop with model: '{modelPath}' at {origin}\n");
+
         Logger.LogInformation($"[BlockerPasses] Attempting to spawn prop with model: '{modelPath}' at {origin}");
 
         if (string.IsNullOrEmpty(modelPath))
         {
             Logger.LogWarning("[BlockerPasses] Empty model path provided, skipping prop spawn");
+            File.AppendAllText(logPath, $"[{DateTime.Now}] Empty model path, skipping\n");
             return;
         }
 
@@ -780,12 +785,14 @@ public class BlockerPasses : BasePlugin
                           var alpha = Math.Clamp(invisibility, 0, 255);
         prop.Render = Color.FromArgb(alpha, color[0], color[1], color[2]);
 
+        prop.SetModel(modelPath);
+        Logger.LogInformation($"[BlockerPasses] Set model '{modelPath}' before dispatch spawn");
+        File.AppendAllText(logPath, $"[{DateTime.Now}] Set model '{modelPath}' before dispatch spawn\n");
+
         prop.Teleport(origin, angles, new Vector(0, 0, 0));
         prop.DispatchSpawn();
         Logger.LogInformation($"[BlockerPasses] Dispatched spawn for prop with model '{modelPath}'");
-
-        prop.SetModel(modelPath);
-        Logger.LogInformation($"[BlockerPasses] Set model '{modelPath}' after dispatch spawn");
+        File.AppendAllText(logPath, $"[{DateTime.Now}] Dispatched spawn for prop with model '{modelPath}'\n");
 
         var bodyComponent = prop.CBodyComponent;
         if (bodyComponent is not { SceneNode: not null }) return;
