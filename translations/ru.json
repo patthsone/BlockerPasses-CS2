@@ -30,6 +30,16 @@
   "texture_management": "Управление текстурами",
   "create_texture": "Создать текстуру",
   "apply_texture": "Применить текстуру",
-  "list_textures": "Список текстур"
+  "list_textures": "Список текстур",
+  "edit_block_positions": "Редактировать позиции блоков",
+  "select_block_to_edit": "Выберите блок для редактирования",
+  "edit_origin": "Редактировать позицию",
+  "edit_angles": "Редактировать углы",
+  "current_origin": "Текущая позиция: {0}",
+  "current_angles": "Текущие углы: {0}",
+  "enter_new_value": "Введите новое значение в чат: x y z",
+  "position_updated": "Позиция обновлена для блока #{0}",
+  "angles_updated": "Углы обновлены для блока #{0}",
+  "invalid_coordinates": "Неверный формат координат"
 }
 

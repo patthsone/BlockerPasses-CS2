@@ -30,6 +30,16 @@
   "texture_management": "Управління текстурами",
   "create_texture": "Створити текстуру",
   "apply_texture": "Застосувати текстуру",
-  "list_textures": "Список текстур"
+  "list_textures": "Список текстур",
+  "edit_block_positions": "Редагувати позиції блоків",
+  "select_block_to_edit": "Оберіть блок для редагування",
+  "edit_origin": "Редагувати позицію",
+  "edit_angles": "Редагувати кути",
+  "current_origin": "Поточна позиція: {0}",
+  "current_angles": "Поточні кути: {0}",
+  "enter_new_value": "Введіть нове значення в чат: x y z",
+  "position_updated": "Позиція оновлена для блоку #{0}",
+  "angles_updated": "Кути оновлені для блоку #{0}",
+  "invalid_coordinates": "Невірний формат координат"
 }
 

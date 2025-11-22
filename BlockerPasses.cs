@@ -464,6 +464,148 @@ public class BlockerPasses : BasePlugin
     }
 
         [RequiresPermissions("@css/root")]
+    [ConsoleCommand("css_bp_setorigin")]
+    public void OnCmdSetOrigin(CCSPlayerController? player, CommandInfo info)
+    {
+        if (info.ArgCount < 5)
+        {
+            var message = GetTranslation("invalid_coordinates");
+            if (player == null)
+                Console.WriteLine($"[BlockerPasses] {message}");
+            else
+                player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
+            return;
+        }
+
+        if (!int.TryParse(info.ArgByIndex(1), out var blockIndex))
+        {
+            var message = GetTranslation("invalid_block_index");
+            if (player == null)
+                Console.WriteLine($"[BlockerPasses] {message}");
+            else
+                player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
+            return;
+        }
+
+        if (!float.TryParse(info.ArgByIndex(2), NumberStyles.Float, CultureInfo.InvariantCulture, out var x) ||
+            !float.TryParse(info.ArgByIndex(3), NumberStyles.Float, CultureInfo.InvariantCulture, out var y) ||
+            !float.TryParse(info.ArgByIndex(4), NumberStyles.Float, CultureInfo.InvariantCulture, out var z))
+        {
+            var message = GetTranslation("invalid_coordinates");
+            if (player == null)
+                Console.WriteLine($"[BlockerPasses] {message}");
+            else
+                player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
+            return;
+        }
+
+        if (!_config.Maps.TryGetValue(Server.MapName, out var entitiesMap) || blockIndex < 1 || blockIndex > entitiesMap.Count)
+        {
+            var message = GetTranslation("invalid_block_index");
+            if (player == null)
+                Console.WriteLine($"[BlockerPasses] {message}");
+            else
+                player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
+            return;
+        }
+
+        var blocks = entitiesMap.ToList();
+        var block = blocks[blockIndex - 1];
+        var newOrigin = $"{x.ToString("F2", CultureInfo.InvariantCulture)} {y.ToString("F2", CultureInfo.InvariantCulture)} {z.ToString("F2", CultureInfo.InvariantCulture)}";
+
+        var updatedBlock = block with { Origin = newOrigin };
+        blocks[blockIndex - 1] = updatedBlock;
+
+        var newConfig = _config with
+        {
+            Maps = new Dictionary<string, List<BlockEntity>>(_config.Maps)
+            {
+                [Server.MapName] = blocks
+            }
+        };
+        _config = newConfig;
+
+        SaveConfig(_config);
+
+        var successMessage = GetTranslation("position_updated", blockIndex);
+        if (player == null)
+            Console.WriteLine($"[BlockerPasses] {successMessage}");
+        else
+            player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + successMessage)}");
+    }
+
+        [RequiresPermissions("@css/root")]
+    [ConsoleCommand("css_bp_setangles")]
+    public void OnCmdSetAngles(CCSPlayerController? player, CommandInfo info)
+    {
+        if (info.ArgCount < 5)
+        {
+            var message = GetTranslation("invalid_coordinates");
+            if (player == null)
+                Console.WriteLine($"[BlockerPasses] {message}");
+            else
+                player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
+            return;
+        }
+
+        if (!int.TryParse(info.ArgByIndex(1), out var blockIndex))
+        {
+            var message = GetTranslation("invalid_block_index");
+            if (player == null)
+                Console.WriteLine($"[BlockerPasses] {message}");
+            else
+                player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
+            return;
+        }
+
+        if (!float.TryParse(info.ArgByIndex(2), NumberStyles.Float, CultureInfo.InvariantCulture, out var x) ||
+            !float.TryParse(info.ArgByIndex(3), NumberStyles.Float, CultureInfo.InvariantCulture, out var y) ||
+            !float.TryParse(info.ArgByIndex(4), NumberStyles.Float, CultureInfo.InvariantCulture, out var z))
+        {
+            var message = GetTranslation("invalid_coordinates");
+            if (player == null)
+                Console.WriteLine($"[BlockerPasses] {message}");
+            else
+                player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
+            return;
+        }
+
+        if (!_config.Maps.TryGetValue(Server.MapName, out var entitiesMap) || blockIndex < 1 || blockIndex > entitiesMap.Count)
+        {
+            var message = GetTranslation("invalid_block_index");
+            if (player == null)
+                Console.WriteLine($"[BlockerPasses] {message}");
+            else
+                player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
+            return;
+        }
+
+        var blocks = entitiesMap.ToList();
+        var block = blocks[blockIndex - 1];
+        var newAngles = $"{x.ToString("F2", CultureInfo.InvariantCulture)} {y.ToString("F2", CultureInfo.InvariantCulture)} {z.ToString("F2", CultureInfo.InvariantCulture)}";
+
+        var updatedBlock = block with { Angles = newAngles };
+        blocks[blockIndex - 1] = updatedBlock;
+
+        var newConfig = _config with
+        {
+            Maps = new Dictionary<string, List<BlockEntity>>(_config.Maps)
+            {
+                [Server.MapName] = blocks
+            }
+        };
+        _config = newConfig;
+
+        SaveConfig(_config);
+
+        var successMessage = GetTranslation("angles_updated", blockIndex);
+        if (player == null)
+            Console.WriteLine($"[BlockerPasses] {successMessage}");
+        else
+            player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + successMessage)}");
+    }
+
+        [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_textures")]
     public void OnCmdListTextures(CCSPlayerController? player, CommandInfo info)
     {
@@ -1098,6 +1240,10 @@ public class BlockerPasses : BasePlugin
             OpenMapEntitiesMenu(player);
         });
 
+        menu.AddMenuOption(GetTranslation("edit_block_positions"), (player, option) => {
+            OpenEditPositionsMenu(player);
+        });
+
         menu.AddMenuOption(GetTranslation("texture_management"), (player, option) => {
             OpenTextureManagementMenu(player);
         });
@@ -1115,7 +1261,7 @@ public class BlockerPasses : BasePlugin
             {
                 var entity = entities[i];
                 var entityName = $"Entity {i + 1}";
-                
+
                 menu.AddMenuOption(entityName, (player, option) => {
                     if (_config.Menu.ShowEntityDetails)
                     {
@@ -1124,7 +1270,7 @@ public class BlockerPasses : BasePlugin
                                   $"Position: {entity.Origin}\n" +
                                   $"Angles: {entity.Angles}\n" +
                                   $"Scale: {entity.Scale}";
-                        
+
                         player.PrintToChat($" {ReplaceColorTags("{CYAN}[BlockerPasses] Entity Info:")}");
                         player.PrintToChat($" {ReplaceColorTags("{WHITE}" + info)}");
                     }
@@ -1142,6 +1288,62 @@ public class BlockerPasses : BasePlugin
 
         menu.AddMenuOption("Back to Main Menu", (player, option) => {
             OpenBlockerPassesMenu(player);
+        });
+
+        menu.Open(player);
+    }
+
+    private void OpenEditPositionsMenu(CCSPlayerController player)
+    {
+        var menu = new ChatMenu(GetTranslation("select_block_to_edit"));
+
+        if (_config.Maps.TryGetValue(Server.MapName, out var entities))
+        {
+            for (int i = 0; i < entities.Count; i++)
+            {
+                var entity = entities[i];
+                var blockName = $"Block {i + 1}";
+                var index = i + 1;
+
+                menu.AddMenuOption(blockName, (player, option) => {
+                    OpenEditBlockMenu(player, index, entity);
+                });
+            }
+        }
+        else
+        {
+            menu.AddMenuOption("No entities for this map", (player, option) => { });
+        }
+
+        menu.AddMenuOption("Back to Main Menu", (player, option) => {
+            OpenBlockerPassesMenu(player);
+        });
+
+        menu.Open(player);
+    }
+
+    private void OpenEditBlockMenu(CCSPlayerController player, int index, BlockEntity entity)
+    {
+        var menu = new ChatMenu($"Edit Block {index}");
+
+        menu.AddMenuOption(GetTranslation("edit_origin"), (player, option) => {
+            var current = GetTranslation("current_origin", entity.Origin);
+            var enter = GetTranslation("enter_new_value");
+            player.PrintToChat($" {ReplaceColorTags("{BLUE}[BlockerPasses] " + current)}");
+            player.PrintToChat($" {ReplaceColorTags("{YELLOW}[BlockerPasses] " + enter)}");
+            player.PrintToChat($" {ReplaceColorTags("{WHITE}[BlockerPasses] Usage: css_bp_setorigin {index} <x> <y> <z>")}");
+        });
+
+        menu.AddMenuOption(GetTranslation("edit_angles"), (player, option) => {
+            var current = GetTranslation("current_angles", entity.Angles);
+            var enter = GetTranslation("enter_new_value");
+            player.PrintToChat($" {ReplaceColorTags("{BLUE}[BlockerPasses] " + current)}");
+            player.PrintToChat($" {ReplaceColorTags("{YELLOW}[BlockerPasses] " + enter)}");
+            player.PrintToChat($" {ReplaceColorTags("{WHITE}[BlockerPasses] Usage: css_bp_setangles {index} <x> <y> <z>")}");
+        });
+
+        menu.AddMenuOption("Back", (player, option) => {
+            OpenEditPositionsMenu(player);
         });
 
         menu.Open(player);
@@ -1212,6 +1414,10 @@ public class BlockerPasses : BasePlugin
             OpenMapEntitiesMenuManager(player);
         });
 
+        menu.AddMenuOption("✏️ " + GetTranslation("edit_block_positions"), (player, option) => {
+            OpenEditPositionsMenuManager(player);
+        });
+
         menu.AddMenuOption("🎨 " + GetTranslation("texture_management"), (player, option) => {
             OpenTextureManagementMenuManager(player);
         });
@@ -1236,16 +1442,16 @@ public class BlockerPasses : BasePlugin
             {
                 var entity = entities[i];
                 var entityName = $"🔹 Entity {i + 1}";
-                
+
                 menu.AddMenuOption(entityName, (player, option) => {
                     if (_config.Menu.ShowEntityDetails)
                     {
                         var info = $"Model: {entity.ModelPath}\n" +
-                                 $"Origin: {entity.Origin}\n" +
-                                 $"Angles: {entity.Angles}\n" +
-                                 $"Color: {string.Join(", ", entity.Color)}\n" +
-                                 $"Scale: {entity.Scale?.ToString() ?? "Default"}";
-                        
+                                  $"Origin: {entity.Origin}\n" +
+                                  $"Angles: {entity.Angles}\n" +
+                                  $"Color: {string.Join(", ", entity.Color)}\n" +
+                                  $"Scale: {entity.Scale?.ToString() ?? "Default"}";
+
                         player.PrintToChat($" {ReplaceColorTags("{BLUE}[BlockerPasses] " + info)}");
                     }
                 });
@@ -1258,6 +1464,76 @@ public class BlockerPasses : BasePlugin
 
         menu.AddMenuOption("🔙 Back to Main Menu", (player, option) => {
             OpenBlockerPassesMenuManager(player);
+        });
+
+        menu.Open(player);
+    }
+
+    private void OpenEditPositionsMenuManager(CCSPlayerController player)
+    {
+        if (_menuApi == null)
+        {
+            Logger.LogError("MenuManager API is null, falling back to native menu");
+            OpenEditPositionsMenu(player);
+            return;
+        }
+
+        var menu = _menuApi.GetMenu($"✏️ {GetTranslation("select_block_to_edit")}");
+
+        if (_config.Maps.TryGetValue(Server.MapName, out var entities))
+        {
+            for (int i = 0; i < entities.Count; i++)
+            {
+                var entity = entities[i];
+                var blockName = $"🔹 Block {i + 1}";
+                var index = i + 1;
+
+                menu.AddMenuOption(blockName, (player, option) => {
+                    OpenEditBlockMenuManager(player, index, entity);
+                });
+            }
+        }
+        else
+        {
+            menu.AddMenuOption("❌ No entities configured for this map", (player, option) => {});
+        }
+
+        menu.AddMenuOption("🔙 Back to Main Menu", (player, option) => {
+            OpenBlockerPassesMenuManager(player);
+        });
+
+        menu.Open(player);
+    }
+
+    private void OpenEditBlockMenuManager(CCSPlayerController player, int index, BlockEntity entity)
+    {
+        if (_menuApi == null)
+        {
+            Logger.LogError("MenuManager API is null, falling back to native menu");
+            OpenEditBlockMenu(player, index, entity);
+            return;
+        }
+
+        var menu = _menuApi.GetMenu($"✏️ Edit Block {index}");
+
+        menu.AddMenuOption("📍 " + GetTranslation("edit_origin"), (player, option) => {
+            var current = GetTranslation("current_origin", entity.Origin);
+            var enter = GetTranslation("enter_new_value");
+            player.PrintToChat($" {ReplaceColorTags("{BLUE}[BlockerPasses] " + current)}");
+            player.PrintToChat($" {ReplaceColorTags("{YELLOW}[BlockerPasses] " + enter)}");
+            player.PrintToChat($" {ReplaceColorTags("{WHITE}[BlockerPasses] Usage: css_bp_setorigin {index} <x> <y> <z>")}");
+        });
+
+        menu.AddMenuOption("🔄 " + GetTranslation("edit_angles"), (player, option) => {
+            var current = GetTranslation("current_angles", entity.Angles);
+            var enter = GetTranslation("enter_new_value");
+            player.PrintToChat($" {ReplaceColorTags("{BLUE}[BlockerPasses] " + current)}");
+            player.PrintToChat($" {ReplaceColorTags("{YELLOW}[BlockerPasses] " + enter)}");
+            player.PrintToChat($" {ReplaceColorTags("{WHITE}[BlockerPasses] Usage: css_bp_setangles {index} <x> <y> <z>")}");
+        });
+
+        menu.AddMenuOption("🔙 Back", (player, option) => {
+            OpenEditPositionsMenuManager(player);
         });
 
         menu.Open(player);

@@ -30,6 +30,16 @@
   "texture_management": "Texture Management",
   "create_texture": "Create Texture",
   "apply_texture": "Apply Texture",
-  "list_textures": "List Textures"
+  "list_textures": "List Textures",
+  "edit_block_positions": "Edit Block Positions",
+  "select_block_to_edit": "Select block to edit",
+  "edit_origin": "Edit Origin",
+  "edit_angles": "Edit Angles",
+  "current_origin": "Current Origin: {0}",
+  "current_angles": "Current Angles: {0}",
+  "enter_new_value": "Enter new value in chat: x y z",
+  "position_updated": "Position updated for block #{0}",
+  "angles_updated": "Angles updated for block #{0}",
+  "invalid_coordinates": "Invalid coordinates format"
 }
 
