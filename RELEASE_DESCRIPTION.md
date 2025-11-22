@@ -1,8 +1,28 @@
-# BlockerPasses-CS2 v0.0.5 - Enhanced Texture System
+# BlockerPasses-CS2 v0.0.8 - Console Spam Removal and Menu Translations
 
-## 🎨 Enhanced Texture System with Performance Improvements
+## 📝 Console Logging Redirection and Menu Localization
 
-This update focuses on improving the existing texture system, fixing bugs, and enhancing performance for better user experience.
+This update removes console spam by redirecting all plugin logs to a file and adds full translations for the menu system.
+
+## ✨ What's New
+
+### 📝 Logging System Overhaul
+- **File-based logging** - All console output redirected to `logs/plugin_log.txt`
+- **Cleaner server console** - No more spam messages in server console
+- **Timestamped logs** - All log entries include timestamps for better tracking
+- **Organized log structure** - Separate log file for plugin activities
+
+### 🌐 Complete Menu Translations
+- **Full localization** - All menu items now support EN/RU/UK languages
+- **Dynamic language switching** - Menu updates immediately when language changes
+- **Consistent translations** - All hardcoded strings replaced with translation keys
+- **MenuManager support** - Translations work with both native and MenuManager menus
+
+### 🛠️ Technical Improvements
+- **Better code organization** - Centralized logging method
+- **Improved maintainability** - Translation keys for all user-facing text
+- **Performance neutral** - No impact on plugin performance
+- **Backward compatible** - All existing functionality preserved
 
 ## ✨ What's New
 
@@ -23,58 +43,59 @@ This update focuses on improving the existing texture system, fixing bugs, and e
 
 ## 🚀 Quick Start Examples
 
-### Apply 2x2 pattern
+### Check plugin logs
 ```bash
-css_bp_applytexture 1 2x2_pattern
-css_bp_applytexture 2 2x2_pattern
+# Logs are now in logs/plugin_log.txt instead of console
+tail -f logs/plugin_log.txt
 ```
 
-### List available textures
+### Change language and use menu
 ```bash
-css_bp_textures
+css_bp_lang ru
+css_bp_menu
 ```
 
-### Create custom texture
-```bash
-css_bp_createtexture server_logo "Server Logo" materials/logos/server_logo.vmt branding
-```
+### View translated menu options
+- All menu items now display in selected language
+- Console messages redirected to log file
+- Clean server console output
 
-## 📋 Pre-built Textures
+## 🌐 Supported Languages
 
-| Name | Description | Category |
-|------|-------------|----------|
-| `white_block` | Classic white texture | basic |
-| `blue_block` | Blue block texture | basic |
-| `red_block` | Red block texture | basic |
-| `green_block` | Green block texture | basic |
-| `2x2_pattern` | 2x2 pattern like competitive mode | patterns |
+| Language | Status | Menu Items |
+|----------|--------|------------|
+| English (EN) | ✅ Complete | All menu options translated |
+| Russian (RU) | ✅ Complete | Полное меню на русском |
+| Ukrainian (UK) | ✅ Complete | Повне меню українською |
 
 ## 🔧 Technical Improvements
 
-- **Enhanced texture rendering** - better color application and visual effects
-- **Performance optimizations** - improved rendering performance
-- **Better error handling** - more robust error handling system
-- **100% backward compatibility** with existing blocks
-- **Multi-language support** (EN/RU)
+- **File logging system** - Centralized logging to `logs/plugin_log.txt`
+- **Complete localization** - All hardcoded strings replaced with translation keys
+- **Menu system overhaul** - Both native and MenuManager menus fully localized
+- **Performance neutral** - No impact on plugin performance
+- **100% backward compatibility** - All existing functionality preserved
 
 ## 🐛 Bug Fixes
 
-- Fixed texture application bugs
-- Fixed menu display issues
-- Improved command error handling
-- Enhanced performance optimizations
+- Removed console spam from all plugin commands
+- Fixed missing translations in menu system
+- Improved log organization and readability
+- Enhanced error message localization
 
 ## 📚 Documentation
 
-- Updated `README.md` with new features
-- Enhanced `blocker_passes_example.json` with texture examples
-- Comprehensive `TEXTURE_GUIDE.md` and `TEXTURE_SYSTEM.md`
+- Updated `README.md` with logging information
+- Added logging section to documentation
+- Enhanced translation system documentation
+- Comprehensive changelog in repository
 
 ## 🔄 Migration
 
-- Existing blocks continue to work unchanged
-- New configuration fields added automatically
-- Pre-built textures loaded on first startup
+- Existing configurations work unchanged
+- Console output automatically redirected to file
+- Language settings preserved
+- All menu functionality maintained
 
 ## 📦 Installation
 
@@ -82,6 +103,7 @@ css_bp_createtexture server_logo "Server Logo" materials/logos/server_logo.vmt b
 2. Build project: `dotnet build --configuration Release`
 3. Copy `BlockerPasses.dll` to plugins folder
 4. Restart server to apply improvements
+5. Check `logs/plugin_log.txt` for plugin activity
 
 ---
 
