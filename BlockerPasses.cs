@@ -28,6 +28,14 @@ public class BlockerPasses : BasePlugin
     private readonly PluginCapability<IMenuApi?> _pluginCapability = new("menu:nfcore");
     private Dictionary<string, Dictionary<string, string>> _translations = new();
 
+    private void LogToFile(string message)
+    {
+        var logsDir = Path.Combine(ModuleDirectory, "logs");
+        Directory.CreateDirectory(logsDir);
+        var logPath = Path.Combine(logsDir, "plugin_log.txt");
+        File.AppendAllText(logPath, $"[{DateTime.Now}] {message}\n");
+    }
+
     public override void Load(bool hotReload)
     {
         _config = LoadConfig();
@@ -67,7 +75,7 @@ public class BlockerPasses : BasePlugin
         {
             var message = GetTranslation("invalid_language");
             if (player == null)
-                Console.WriteLine($"[BlockerPasses] {message}");
+                LogToFile($"[BlockerPasses] {message}");
             else
                 player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
             return;
@@ -85,7 +93,7 @@ public class BlockerPasses : BasePlugin
             _ => "Language changed to English"
         };
         if (player == null)
-            Console.WriteLine($"[BlockerPasses] {successMessage}");
+            LogToFile($"[BlockerPasses] {successMessage}");
         else
             player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + successMessage)}");
     }
@@ -100,7 +108,7 @@ public class BlockerPasses : BasePlugin
         var msg = GetTranslation("config_reloaded");
 
         if (player == null)
-            Console.WriteLine($"[BlockerPasses] {msg}");
+            LogToFile($"[BlockerPasses] {msg}");
         else
             player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + msg)}");
     }
@@ -144,13 +152,13 @@ public class BlockerPasses : BasePlugin
 }}";
 
                 var message = GetTranslation("position_info", originStr, anglesStr);
-        
+
         player.PrintToChat($" {ReplaceColorTags("{BLUE}[BlockerPasses] " + message)}");
         player.PrintToChat($" {ReplaceColorTags("{YELLOW}[BlockerPasses] Template:")}");
         player.PrintToChat($" {ReplaceColorTags("{WHITE}" + template)}");
-        
-        Console.WriteLine($"BP_POS: {message}");
-        Console.WriteLine($"BP_TEMPLATE: {template}");
+
+        LogToFile($"BP_POS: {message}");
+        LogToFile($"BP_TEMPLATE: {template}");
     }
 
         [RequiresPermissions("@css/root")]
@@ -171,10 +179,10 @@ public class BlockerPasses : BasePlugin
                        $"{eyeAngles.Z.ToString("F2", CultureInfo.InvariantCulture)}";
 
         var message = $"Eye Angles: {anglesStr}";
-        
+
         info.ReplyToCommand(message);
         player.PrintToChat($" {ReplaceColorTags("{BLUE}" + message)}");
-        Console.WriteLine($"BP_EYE: {message}");
+        LogToFile($"BP_EYE: {message}");
     }
 
         [RequiresPermissions("@css/root")]
@@ -185,7 +193,7 @@ public class BlockerPasses : BasePlugin
         {
             var errorMessage = GetTranslation("must_be_alive");
             if (player == null)
-                Console.WriteLine($"[BlockerPasses] {errorMessage}");
+                LogToFile($"[BlockerPasses] {errorMessage}");
             else
                 player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + errorMessage)}");
             return;
@@ -242,7 +250,7 @@ public class BlockerPasses : BasePlugin
 
         var message = GetTranslation("block_added");
         player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + message)}");
-        Console.WriteLine($"BP_ADD: Block added to {Server.MapName} with invisibility={invisibility}, quota={quota}");
+        LogToFile($"BP_ADD: Block added to {Server.MapName} with invisibility={invisibility}, quota={quota}");
     }
 
         [RequiresPermissions("@css/root")]
@@ -253,22 +261,22 @@ public class BlockerPasses : BasePlugin
         {
             var noEntitiesMessage = GetTranslation("no_entities");
             if (player == null)
-                Console.WriteLine($"[BlockerPasses] {noEntitiesMessage}");
+                LogToFile($"[BlockerPasses] {noEntitiesMessage}");
             else
                 player.PrintToChat($" {ReplaceColorTags("{YELLOW}[BlockerPasses] " + noEntitiesMessage)}");
             return;
         }
 
         var blocks = _config.Maps[Server.MapName];
-    
+
         if (player == null)
         {
-            Console.WriteLine($"[BlockerPasses] Blocks on {Server.MapName}:");
+            LogToFile($"[BlockerPasses] Blocks on {Server.MapName}:");
             for (int i = 0; i < blocks.Count; i++)
             {
                 var block = blocks[i];
                 var blockInfo = $"#{i + 1}: {block.Name ?? $"Block_{i + 1}"} | Invisibility: {block.Invisibility} | Quota: {block.Quota}";
-                Console.WriteLine($"[BlockerPasses] {blockInfo}");
+                LogToFile($"[BlockerPasses] {blockInfo}");
             }
         }
         else
@@ -281,8 +289,8 @@ public class BlockerPasses : BasePlugin
                 player.PrintToChat($" {ReplaceColorTags("{WHITE}" + blockInfo)}");
             }
         }
-    
-        Console.WriteLine($"BP_LIST: Listed {blocks.Count} blocks for {Server.MapName}");
+
+        LogToFile($"BP_LIST: Listed {blocks.Count} blocks for {Server.MapName}");
     }
 
         [RequiresPermissions("@css/root")]
@@ -293,7 +301,7 @@ public class BlockerPasses : BasePlugin
         {
             var noEntitiesMessage = GetTranslation("no_entities");
             if (player == null)
-                Console.WriteLine($"[BlockerPasses] {noEntitiesMessage}");
+                LogToFile($"[BlockerPasses] {noEntitiesMessage}");
             else
                 player.PrintToChat($" {ReplaceColorTags("{YELLOW}[BlockerPasses] " + noEntitiesMessage)}");
             return;
@@ -301,19 +309,19 @@ public class BlockerPasses : BasePlugin
 
         var count = _config.Maps[Server.MapName].Count;
         _config.Maps[Server.MapName].Clear();
-        
-                SaveConfig(_config);
-            
-                var message = GetTranslation("block_removed");
-                if (player == null)
-                {
-                    Console.WriteLine($"[BlockerPasses] {message} ({count} blocks)");
-                }
-                else
-                {
-                    player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + message)} ({count} blocks)");
-                }
-                Console.WriteLine($"BP_REMOVEALL: Removed {count} blocks from {Server.MapName}");
+
+                 SaveConfig(_config);
+
+                 var message = GetTranslation("block_removed");
+                 if (player == null)
+                 {
+                     LogToFile($"[BlockerPasses] {message} ({count} blocks)");
+                 }
+                 else
+                 {
+                     player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + message)} ({count} blocks)");
+                 }
+                 LogToFile($"BP_REMOVEALL: Removed {count} blocks from {Server.MapName}");
     }
 
         [RequiresPermissions("@css/root")]
@@ -322,13 +330,13 @@ public class BlockerPasses : BasePlugin
     {
         if (player == null)
         {
-            Console.WriteLine("[BlockerPasses] Preview command can only be used by players!");
+            LogToFile("[BlockerPasses] Preview command can only be used by players!");
             return;
         }
 
                 var message = GetTranslation("preview_mode");
-        player.PrintToChat($" {ReplaceColorTags("{CYAN}[BlockerPasses] " + message)}");
-        Console.WriteLine($"BP_PREVIEW: Preview mode toggled for {player.PlayerName}");
+                player.PrintToChat($" {ReplaceColorTags("{CYAN}[BlockerPasses] " + message)}");
+                LogToFile($"BP_PREVIEW: Preview mode toggled for {player.PlayerName}");
     }
 
         [RequiresPermissions("@css/root")]
@@ -339,7 +347,7 @@ public class BlockerPasses : BasePlugin
         {
             var message = GetTranslation("texture_create_usage");
             if (player == null)
-                Console.WriteLine($"[BlockerPasses] {message}");
+                LogToFile($"[BlockerPasses] {message}");
             else
                 player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
             return;
@@ -374,7 +382,7 @@ public class BlockerPasses : BasePlugin
 
         var successMessage = GetTranslation("texture_created", textureName);
         if (player == null)
-            Console.WriteLine($"[BlockerPasses] {successMessage}");
+            LogToFile($"[BlockerPasses] {successMessage}");
         else
             player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + successMessage)}");
     }
@@ -387,7 +395,7 @@ public class BlockerPasses : BasePlugin
         {
             var message = GetTranslation("texture_apply_usage");
             if (player == null)
-                Console.WriteLine($"[BlockerPasses] {message}");
+                LogToFile($"[BlockerPasses] {message}");
             else
                 player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
             return;
@@ -397,7 +405,7 @@ public class BlockerPasses : BasePlugin
         {
             var message = GetTranslation("invalid_block_index");
             if (player == null)
-                Console.WriteLine($"[BlockerPasses] {message}");
+                LogToFile($"[BlockerPasses] {message}");
             else
                 player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
             return;
@@ -409,7 +417,7 @@ public class BlockerPasses : BasePlugin
         {
             var message = GetTranslation("texture_not_found", textureName);
             if (player == null)
-                Console.WriteLine($"[BlockerPasses] {message}");
+                LogToFile($"[BlockerPasses] {message}");
             else
                 player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
             return;
@@ -419,7 +427,7 @@ public class BlockerPasses : BasePlugin
         {
             var message = GetTranslation("invalid_block_index");
             if (player == null)
-                Console.WriteLine($"[BlockerPasses] {message}");
+                LogToFile($"[BlockerPasses] {message}");
             else
                 player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
             return;
@@ -458,7 +466,7 @@ public class BlockerPasses : BasePlugin
 
         var successMessage = GetTranslation("texture_applied", textureName, blockIndex);
         if (player == null)
-            Console.WriteLine($"[BlockerPasses] {successMessage}");
+            LogToFile($"[BlockerPasses] {successMessage}");
         else
             player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + successMessage)}");
     }
@@ -471,7 +479,7 @@ public class BlockerPasses : BasePlugin
         {
             var message = GetTranslation("invalid_coordinates");
             if (player == null)
-                Console.WriteLine($"[BlockerPasses] {message}");
+                LogToFile($"[BlockerPasses] {message}");
             else
                 player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
             return;
@@ -481,7 +489,7 @@ public class BlockerPasses : BasePlugin
         {
             var message = GetTranslation("invalid_block_index");
             if (player == null)
-                Console.WriteLine($"[BlockerPasses] {message}");
+                LogToFile($"[BlockerPasses] {message}");
             else
                 player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
             return;
@@ -493,7 +501,7 @@ public class BlockerPasses : BasePlugin
         {
             var message = GetTranslation("invalid_coordinates");
             if (player == null)
-                Console.WriteLine($"[BlockerPasses] {message}");
+                LogToFile($"[BlockerPasses] {message}");
             else
                 player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
             return;
@@ -503,7 +511,7 @@ public class BlockerPasses : BasePlugin
         {
             var message = GetTranslation("invalid_block_index");
             if (player == null)
-                Console.WriteLine($"[BlockerPasses] {message}");
+                LogToFile($"[BlockerPasses] {message}");
             else
                 player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
             return;
@@ -529,7 +537,7 @@ public class BlockerPasses : BasePlugin
 
         var successMessage = GetTranslation("position_updated", blockIndex);
         if (player == null)
-            Console.WriteLine($"[BlockerPasses] {successMessage}");
+            LogToFile($"[BlockerPasses] {successMessage}");
         else
             player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + successMessage)}");
     }
@@ -542,7 +550,7 @@ public class BlockerPasses : BasePlugin
         {
             var message = GetTranslation("invalid_coordinates");
             if (player == null)
-                Console.WriteLine($"[BlockerPasses] {message}");
+                LogToFile($"[BlockerPasses] {message}");
             else
                 player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
             return;
@@ -552,7 +560,7 @@ public class BlockerPasses : BasePlugin
         {
             var message = GetTranslation("invalid_block_index");
             if (player == null)
-                Console.WriteLine($"[BlockerPasses] {message}");
+                LogToFile($"[BlockerPasses] {message}");
             else
                 player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
             return;
@@ -564,7 +572,7 @@ public class BlockerPasses : BasePlugin
         {
             var message = GetTranslation("invalid_coordinates");
             if (player == null)
-                Console.WriteLine($"[BlockerPasses] {message}");
+                LogToFile($"[BlockerPasses] {message}");
             else
                 player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
             return;
@@ -574,7 +582,7 @@ public class BlockerPasses : BasePlugin
         {
             var message = GetTranslation("invalid_block_index");
             if (player == null)
-                Console.WriteLine($"[BlockerPasses] {message}");
+                LogToFile($"[BlockerPasses] {message}");
             else
                 player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] " + message)}");
             return;
@@ -600,7 +608,7 @@ public class BlockerPasses : BasePlugin
 
         var successMessage = GetTranslation("angles_updated", blockIndex);
         if (player == null)
-            Console.WriteLine($"[BlockerPasses] {successMessage}");
+            LogToFile($"[BlockerPasses] {successMessage}");
         else
             player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + successMessage)}");
     }
@@ -613,7 +621,7 @@ public class BlockerPasses : BasePlugin
         {
             var noTexturesMessage = GetTranslation("no_textures_available");
             if (player == null)
-                Console.WriteLine($"[BlockerPasses] {noTexturesMessage}");
+                LogToFile($"[BlockerPasses] {noTexturesMessage}");
             else
                 player.PrintToChat($" {ReplaceColorTags("{YELLOW}[BlockerPasses] " + noTexturesMessage)}");
             return;
@@ -621,7 +629,7 @@ public class BlockerPasses : BasePlugin
 
         var texturesMessage = GetTranslation("available_textures");
         if (player == null)
-            Console.WriteLine($"[BlockerPasses] {texturesMessage}");
+            LogToFile($"[BlockerPasses] {texturesMessage}");
         else
             player.PrintToChat($" {ReplaceColorTags("{BLUE}[BlockerPasses] " + texturesMessage)}");
 
@@ -629,7 +637,7 @@ public class BlockerPasses : BasePlugin
         {
             var textureInfo = $"• {texture.Name}: {texture.DisplayName} ({texture.Category})";
             if (player == null)
-                Console.WriteLine($"[BlockerPasses] {textureInfo}");
+                LogToFile($"[BlockerPasses] {textureInfo}");
             else
                 player.PrintToChat($" {ReplaceColorTags("{WHITE}" + textureInfo)}");
         }
@@ -748,7 +756,19 @@ public class BlockerPasses : BasePlugin
                 ["texture_management"] = "Texture Management",
                 ["create_texture"] = "Create Texture",
                 ["apply_texture"] = "Apply Texture",
-                ["list_textures"] = "List Textures"
+                ["list_textures"] = "List Textures",
+                ["edit_block_positions"] = "Edit Block Positions",
+                ["select_block_to_edit"] = "Select Block to Edit",
+                ["edit_origin"] = "Edit Origin",
+                ["edit_angles"] = "Edit Angles",
+                ["current_origin"] = "Current Origin: {0}",
+                ["current_angles"] = "Current Angles: {0}",
+                ["enter_new_value"] = "Enter new value using command",
+                ["position_updated"] = "Position updated for block #{0}",
+                ["angles_updated"] = "Angles updated for block #{0}",
+                ["invalid_coordinates"] = "Invalid coordinates. Usage: <x> <y> <z>",
+                ["back_to_main_menu"] = "Back to Main Menu",
+                ["no_entities_for_this_map"] = "No entities for this map"
             },
             "ru" => new Dictionary<string, string>
             {
@@ -783,7 +803,19 @@ public class BlockerPasses : BasePlugin
                 ["texture_management"] = "Управление текстурами",
                 ["create_texture"] = "Создать текстуру",
                 ["apply_texture"] = "Применить текстуру",
-                ["list_textures"] = "Список текстур"
+                ["list_textures"] = "Список текстур",
+                ["edit_block_positions"] = "Редактировать позиции блоков",
+                ["select_block_to_edit"] = "Выберите блок для редактирования",
+                ["edit_origin"] = "Редактировать позицию",
+                ["edit_angles"] = "Редактировать углы",
+                ["current_origin"] = "Текущая позиция: {0}",
+                ["current_angles"] = "Текущие углы: {0}",
+                ["enter_new_value"] = "Введите новое значение с помощью команды",
+                ["position_updated"] = "Позиция обновлена для блока #{0}",
+                ["angles_updated"] = "Углы обновлены для блока #{0}",
+                ["invalid_coordinates"] = "Неверные координаты. Использование: <x> <y> <z>",
+                ["back_to_main_menu"] = "Вернуться в главное меню",
+                ["no_entities_for_this_map"] = "Для этой карты нет сущностей"
             },
             "uk" => new Dictionary<string, string>
             {
@@ -818,7 +850,19 @@ public class BlockerPasses : BasePlugin
                 ["texture_management"] = "Управління текстурами",
                 ["create_texture"] = "Створити текстуру",
                 ["apply_texture"] = "Застосувати текстуру",
-                ["list_textures"] = "Список текстур"
+                ["list_textures"] = "Список текстур",
+                ["edit_block_positions"] = "Редагувати позиції блоків",
+                ["select_block_to_edit"] = "Виберіть блок для редагування",
+                ["edit_origin"] = "Редагувати позицію",
+                ["edit_angles"] = "Редагувати кути",
+                ["current_origin"] = "Поточна позиція: {0}",
+                ["current_angles"] = "Поточні кути: {0}",
+                ["enter_new_value"] = "Введіть нове значення за допомогою команди",
+                ["position_updated"] = "Позицію оновлено для блоку #{0}",
+                ["angles_updated"] = "Кути оновлено для блоку #{0}",
+                ["invalid_coordinates"] = "Невірні координати. Використання: <x> <y> <z>",
+                ["back_to_main_menu"] = "Повернутися до головного меню",
+                ["no_entities_for_this_map"] = "Для цієї карти немає сущностей"
             },
             _ => new Dictionary<string, string>()
         };
@@ -1179,15 +1223,15 @@ public class BlockerPasses : BasePlugin
         }
 
         var menu = new ChatMenu(_config.Menu.MenuTitle);
-        
-                menu.AddMenuOption("Reload Config", (player, option) => {
-            _config = LoadConfig();
-            player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] Configuration reloaded!")}");
-        });
 
-        if (_config.Menu.EnablePositionCommands)
-        {
-            menu.AddMenuOption("Get Position", (player, option) => {
+                 menu.AddMenuOption(GetTranslation("reload_config"), (player, option) => {
+             _config = LoadConfig();
+             player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + GetTranslation("config_reloaded"))}");
+         });
+
+         if (_config.Menu.EnablePositionCommands)
+         {
+             menu.AddMenuOption(GetTranslation("get_position"), (player, option) => {
                 if (!player.PawnIsAlive || player.PlayerPawn.Value == null)
                 {
                     player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] You must be alive to use this!")}");
@@ -1208,10 +1252,10 @@ public class BlockerPasses : BasePlugin
 
                 var message = $"Position: {originStr} | Angles: {anglesStr}";
                 player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + message)}");
-                Console.WriteLine($"BP_POS: {message}");
+                LogToFile($"BP_POS: {message}");
             });
 
-            menu.AddMenuOption("Get Eye Angles", (player, option) => {
+            menu.AddMenuOption(GetTranslation("get_eye_angles"), (player, option) => {
                 if (!player.PawnIsAlive || player.PlayerPawn.Value == null)
                 {
                     player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] You must be alive to use this!")}");
@@ -1227,16 +1271,16 @@ public class BlockerPasses : BasePlugin
 
                 var message = $"Eye Angles: {anglesStr}";
                 player.PrintToChat($" {ReplaceColorTags("{BLUE}[BlockerPasses] " + message)}");
-                Console.WriteLine($"BP_EYE: {message}");
+                LogToFile($"BP_EYE: {message}");
             });
         }
 
-        menu.AddMenuOption("Current Settings", (player, option) => {
-            var message = $"Min Players: {_config.Players} | Current Map: {Server.MapName}";
+        menu.AddMenuOption(GetTranslation("current_settings"), (player, option) => {
+            var message = GetTranslation("settings_info", _config.Players, Server.MapName);
             player.PrintToChat($" {ReplaceColorTags("{YELLOW}[BlockerPasses] " + message)}");
         });
 
-        menu.AddMenuOption("Map Entities", (player, option) => {
+        menu.AddMenuOption(GetTranslation("map_entities"), (player, option) => {
             OpenMapEntitiesMenu(player);
         });
 
@@ -1283,10 +1327,10 @@ public class BlockerPasses : BasePlugin
         }
         else
         {
-            menu.AddMenuOption("No entities for this map", (player, option) => { });
+            menu.AddMenuOption(GetTranslation("no_entities_for_this_map"), (player, option) => { });
         }
 
-        menu.AddMenuOption("Back to Main Menu", (player, option) => {
+        menu.AddMenuOption(GetTranslation("back_to_main_menu"), (player, option) => {
             OpenBlockerPassesMenu(player);
         });
 
@@ -1312,10 +1356,10 @@ public class BlockerPasses : BasePlugin
         }
         else
         {
-            menu.AddMenuOption("No entities for this map", (player, option) => { });
+            menu.AddMenuOption(GetTranslation("no_entities_for_this_map"), (player, option) => { });
         }
 
-        menu.AddMenuOption("Back to Main Menu", (player, option) => {
+        menu.AddMenuOption(GetTranslation("back_to_main_menu"), (player, option) => {
             OpenBlockerPassesMenu(player);
         });
 
@@ -1342,7 +1386,7 @@ public class BlockerPasses : BasePlugin
             player.PrintToChat($" {ReplaceColorTags("{WHITE}[BlockerPasses] Usage: css_bp_setangles {index} <x> <y> <z>")}");
         });
 
-        menu.AddMenuOption("Back", (player, option) => {
+        menu.AddMenuOption(GetTranslation("back"), (player, option) => {
             OpenEditPositionsMenu(player);
         });
 
@@ -1386,10 +1430,10 @@ public class BlockerPasses : BasePlugin
 
                 var message = $"Position: {pos.X:F2}, {pos.Y:F2}, {pos.Z:F2} | Angles: {angles.X:F2}, {angles.Y:F2}, {angles.Z:F2}";
                 player.PrintToChat($" {ReplaceColorTags("{BLUE}[BlockerPasses] " + message)}");
-                Console.WriteLine($"BP_POS: {message}");
+                LogToFile($"BP_POS: {message}");
             });
 
-            menu.AddMenuOption("👁️ Get Eye Angles", (player, option) => {
+            menu.AddMenuOption("👁️ " + GetTranslation("get_eye_angles"), (player, option) => {
                 if (!player.PawnIsAlive || player.PlayerPawn.Value == null)
                 {
                     player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] You must be alive to get eye angles!")}");
@@ -1401,16 +1445,16 @@ public class BlockerPasses : BasePlugin
 
                 var message = $"Eye Angles: {eyeAngles.X:F2}, {eyeAngles.Y:F2}, {eyeAngles.Z:F2}";
                 player.PrintToChat($" {ReplaceColorTags("{BLUE}[BlockerPasses] " + message)}");
-                Console.WriteLine($"BP_EYE: {message}");
+                LogToFile($"BP_EYE: {message}");
             });
         }
 
-        menu.AddMenuOption("⚙️ Current Settings", (player, option) => {
-            var message = $"Min Players: {_config.Players} | Map: {Server.MapName}";
+        menu.AddMenuOption("⚙️ " + GetTranslation("current_settings"), (player, option) => {
+            var message = GetTranslation("settings_info", _config.Players, Server.MapName);
             player.PrintToChat($" {ReplaceColorTags("{BLUE}[BlockerPasses] " + message)}");
         });
 
-        menu.AddMenuOption("🗺️ Map Entities", (player, option) => {
+        menu.AddMenuOption("🗺️ " + GetTranslation("map_entities"), (player, option) => {
             OpenMapEntitiesMenuManager(player);
         });
 
@@ -1459,10 +1503,10 @@ public class BlockerPasses : BasePlugin
         }
         else
         {
-            menu.AddMenuOption("❌ No entities configured for this map", (player, option) => {});
+            menu.AddMenuOption("❌ " + GetTranslation("no_entities_for_this_map"), (player, option) => {});
         }
 
-        menu.AddMenuOption("🔙 Back to Main Menu", (player, option) => {
+        menu.AddMenuOption("🔙 " + GetTranslation("back_to_main_menu"), (player, option) => {
             OpenBlockerPassesMenuManager(player);
         });
 
@@ -1495,10 +1539,10 @@ public class BlockerPasses : BasePlugin
         }
         else
         {
-            menu.AddMenuOption("❌ No entities configured for this map", (player, option) => {});
+            menu.AddMenuOption("❌ " + GetTranslation("no_entities_for_this_map"), (player, option) => {});
         }
 
-        menu.AddMenuOption("🔙 Back to Main Menu", (player, option) => {
+        menu.AddMenuOption("🔙 " + GetTranslation("back_to_main_menu"), (player, option) => {
             OpenBlockerPassesMenuManager(player);
         });
 
@@ -1532,7 +1576,7 @@ public class BlockerPasses : BasePlugin
             player.PrintToChat($" {ReplaceColorTags("{WHITE}[BlockerPasses] Usage: css_bp_setangles {index} <x> <y> <z>")}");
         });
 
-        menu.AddMenuOption("🔙 Back", (player, option) => {
+        menu.AddMenuOption("🔙 " + GetTranslation("back"), (player, option) => {
             OpenEditPositionsMenuManager(player);
         });
 
