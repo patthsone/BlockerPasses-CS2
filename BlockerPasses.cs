@@ -970,9 +970,10 @@ public class BlockerPasses : BasePlugin
 
         prop.Collision.SolidType = SolidType_t.SOLID_VPHYSICS;
 
-                          var alpha = Math.Clamp(invisibility, 0, 255);
+                           var alpha = Math.Clamp(invisibility, 0, 255);
         prop.Render = Color.FromArgb(alpha, color[0], color[1], color[2]);
 
+        prop.SetModel(modelPath);
         prop.Teleport(origin, angles, new Vector(0, 0, 0));
         prop.DispatchSpawn();
         Logger.LogInformation($"[BlockerPasses] Dispatched spawn for prop with model '{modelPath}'");
@@ -980,10 +981,6 @@ public class BlockerPasses : BasePlugin
 
         Server.NextFrame(() =>
         {
-            prop.SetModel(modelPath);
-            Logger.LogInformation($"[BlockerPasses] Set model '{modelPath}' after dispatch spawn in next frame");
-            File.AppendAllText(logPath, $"[{DateTime.Now}] Set model '{modelPath}' after dispatch spawn in next frame\n");
-
             var bodyComponent = prop.CBodyComponent;
             if (bodyComponent is not { SceneNode: not null }) return;
 
