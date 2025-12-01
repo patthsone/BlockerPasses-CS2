@@ -979,18 +979,38 @@ public class BlockerPasses : BasePlugin
         Logger.LogInformation($"[BlockerPasses] Dispatched spawn for prop with model '{modelPath}'");
         File.AppendAllText(logPath, $"[{DateTime.Now}] Dispatched spawn for prop with model '{modelPath}'\n");
 
+        // Use multiple NextFrame calls to ensure entity is fully spawned and out of staging list
         Server.NextFrame(() =>
         {
-            var bodyComponent = prop.CBodyComponent;
-            if (bodyComponent is not { SceneNode: not null }) return;
-
-            if (entityScale != null && entityScale != 0.0f)
-                bodyComponent.SceneNode.GetSkeletonInstance().Scale = entityScale.Value;
-
-            if (textureSettings != null)
+            Server.NextFrame(() =>
             {
-                ApplyTextureToProp(prop, textureSettings, alpha);
-            }
+                if (prop == null || !prop.IsValid)
+                {
+                    Logger.LogWarning($"[BlockerPasses] Prop is null or invalid when trying to set scale");
+                    return;
+                }
+
+                var bodyComponent = prop.CBodyComponent;
+                if (bodyComponent?.SceneNode == null) return;
+
+                try
+                {
+                    var skeletonInstance = bodyComponent.SceneNode.GetSkeletonInstance();
+                    if (skeletonInstance != null && entityScale != null && entityScale != 0.0f)
+                    {
+                        skeletonInstance.Scale = entityScale.Value;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning($"[BlockerPasses] Failed to set skeleton scale: {ex.Message}");
+                }
+
+                if (textureSettings != null)
+                {
+                    ApplyTextureToProp(prop, textureSettings, alpha);
+                }
+            });
         });
     }
 
