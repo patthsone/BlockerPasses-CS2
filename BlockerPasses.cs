@@ -21,7 +21,7 @@ public class BlockerPasses : BasePlugin
 {
     public override string ModuleAuthor => "PattHs";
     public override string ModuleName => "Blocker Passes";
-    public override string ModuleVersion => "v0.0.8";
+    public override string ModuleVersion => "v0.0.9";
 
     private Config _config = null!;
     private IMenuApi? _menuApi;
@@ -979,7 +979,6 @@ public class BlockerPasses : BasePlugin
         Logger.LogInformation($"[BlockerPasses] Dispatched spawn for prop with model '{modelPath}'");
         File.AppendAllText(logPath, $"[{DateTime.Now}] Dispatched spawn for prop with model '{modelPath}'\n");
 
-        // Use multiple NextFrame calls to ensure entity is fully spawned and out of staging list
         Server.NextFrame(() =>
         {
             Server.NextFrame(() =>
