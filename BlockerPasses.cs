@@ -21,12 +21,15 @@ public class BlockerPasses : BasePlugin
 {
     public override string ModuleAuthor => "PattHs";
     public override string ModuleName => "Blocker Passes";
-    public override string ModuleVersion => "v0.0.9";
+    public override string ModuleVersion => "v0.0.9"; 
 
     private Config _config = null!;
     private IMenuApi? _menuApi;
     private readonly PluginCapability<IMenuApi?> _pluginCapability = new("menu:nfcore");
     private Dictionary<string, Dictionary<string, string>> _translations = new();
+    
+    
+    private List<CBaseModelEntity> _spawnedProps = new();
 
     private void LogToFile(string message)
     {
@@ -81,12 +84,12 @@ public class BlockerPasses : BasePlugin
             return;
         }
 
-                var newConfig = _config with { Language = _config.Language with { CurrentLanguage = lang } };
+        var newConfig = _config with { Language = _config.Language with { CurrentLanguage = lang } };
         _config = newConfig;
 
-                InitializeTranslations();
+        InitializeTranslations();
 
-                var successMessage = lang switch
+        var successMessage = lang switch
         {
             "ru" => "Язык изменен на русский",
             "uk" => "Мову змінено на українську",
@@ -113,7 +116,7 @@ public class BlockerPasses : BasePlugin
             player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + msg)}");
     }
 
-        [RequiresPermissions("@css/root")]
+    [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_getpos")]
     public void OnCmdGetPos(CCSPlayerController? player, CommandInfo info)
     {
@@ -131,7 +134,7 @@ public class BlockerPasses : BasePlugin
         var origin = pawn.AbsOrigin!;
         var angles = pawn.AbsRotation!;
 
-                var originStr = $"{origin.X.ToString("F2", CultureInfo.InvariantCulture)} " +
+        var originStr = $"{origin.X.ToString("F2", CultureInfo.InvariantCulture)} " +
                        $"{origin.Y.ToString("F2", CultureInfo.InvariantCulture)} " +
                        $"{origin.Z.ToString("F2", CultureInfo.InvariantCulture)}";
 
@@ -139,7 +142,7 @@ public class BlockerPasses : BasePlugin
                        $"{angles.Y.ToString("F2", CultureInfo.InvariantCulture)} " +
                        $"{angles.Z.ToString("F2", CultureInfo.InvariantCulture)}";
 
-                var template = $@"
+        var template = $@"
 {{
     ""ModelPath"": ""models/props/de_dust/hr_dust/dust_windows/dust_rollupdoor_96x128_surface_lod.vmdl"",
     ""Color"": [255, 255, 255],
@@ -151,7 +154,7 @@ public class BlockerPasses : BasePlugin
     ""Name"": ""Block_{Server.MapName}_{DateTime.Now:HHmmss}""
 }}";
 
-                var message = GetTranslation("position_info", originStr, anglesStr);
+        var message = GetTranslation("position_info", originStr, anglesStr);
 
         player.PrintToChat($" {ReplaceColorTags("{BLUE}[BlockerPasses] " + message)}");
         player.PrintToChat($" {ReplaceColorTags("{YELLOW}[BlockerPasses] Template:")}");
@@ -161,7 +164,7 @@ public class BlockerPasses : BasePlugin
         LogToFile($"BP_TEMPLATE: {template}");
     }
 
-        [RequiresPermissions("@css/root")]
+    [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_geteye")]
     public void OnCmdGetEye(CCSPlayerController? player, CommandInfo info)
     {
@@ -185,7 +188,7 @@ public class BlockerPasses : BasePlugin
         LogToFile($"BP_EYE: {message}");
     }
 
-        [RequiresPermissions("@css/root")]
+    [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_add")]
     public void OnCmdAdd(CCSPlayerController? player, CommandInfo info)
     {
@@ -203,13 +206,13 @@ public class BlockerPasses : BasePlugin
         var origin = pawn.AbsOrigin!;
         var angles = pawn.AbsRotation!;
 
-                var invisibility = 255;
+        var invisibility = 255;
         var quota = 0;
         var scale = 1.0f;
         var color = new int[] { 255, 255, 255 };
         var modelPath = "models/props/de_dust/hr_dust/dust_windows/dust_rollupdoor_96x128_surface_lod.vmdl";
 
-                if (info.ArgCount >= 2)
+        if (info.ArgCount >= 2)
         {
             if (int.TryParse(info.ArgByIndex(1), out var invis))
                 invisibility = Math.Clamp(invis, 0, 255);
@@ -220,7 +223,7 @@ public class BlockerPasses : BasePlugin
                 quota = Math.Max(0, quotaVal);
         }
 
-                var originStr = $"{origin.X.ToString("F2", CultureInfo.InvariantCulture)} " +
+        var originStr = $"{origin.X.ToString("F2", CultureInfo.InvariantCulture)} " +
                        $"{origin.Y.ToString("F2", CultureInfo.InvariantCulture)} " +
                        $"{origin.Z.ToString("F2", CultureInfo.InvariantCulture)}";
 
@@ -228,7 +231,7 @@ public class BlockerPasses : BasePlugin
                        $"{angles.Y.ToString("F2", CultureInfo.InvariantCulture)} " +
                        $"{angles.Z.ToString("F2", CultureInfo.InvariantCulture)}";
 
-                var newBlock = new BlockEntity
+        var newBlock = new BlockEntity
         {
             ModelPath = modelPath,
             Color = color,
@@ -240,20 +243,20 @@ public class BlockerPasses : BasePlugin
             Name = $"Block_{Server.MapName}_{DateTime.Now:HHmmss}"
         };
 
-                if (!_config.Maps.ContainsKey(Server.MapName))
+        if (!_config.Maps.ContainsKey(Server.MapName))
         {
             _config.Maps[Server.MapName] = new List<BlockEntity>();
         }
         _config.Maps[Server.MapName].Add(newBlock);
 
-                SaveConfig(_config);
+        SaveConfig(_config);
 
         var message = GetTranslation("block_added");
         player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + message)}");
         LogToFile($"BP_ADD: Block added to {Server.MapName} with invisibility={invisibility}, quota={quota}");
     }
 
-        [RequiresPermissions("@css/root")]
+    [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_list")]
     public void OnCmdList(CCSPlayerController? player, CommandInfo info)
     {
@@ -293,7 +296,7 @@ public class BlockerPasses : BasePlugin
         LogToFile($"BP_LIST: Listed {blocks.Count} blocks for {Server.MapName}");
     }
 
-        [RequiresPermissions("@css/root")]
+    [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_removeall")]
     public void OnCmdRemoveAll(CCSPlayerController? player, CommandInfo info)
     {
@@ -310,21 +313,34 @@ public class BlockerPasses : BasePlugin
         var count = _config.Maps[Server.MapName].Count;
         _config.Maps[Server.MapName].Clear();
 
-                 SaveConfig(_config);
+        SaveConfig(_config);
 
-                 var message = GetTranslation("block_removed");
-                 if (player == null)
-                 {
-                     LogToFile($"[BlockerPasses] {message} ({count} blocks)");
-                 }
-                 else
-                 {
-                     player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + message)} ({count} blocks)");
-                 }
-                 LogToFile($"BP_REMOVEALL: Removed {count} blocks from {Server.MapName}");
+        var message = GetTranslation("block_removed");
+        if (player == null)
+        {
+            LogToFile($"[BlockerPasses] {message} ({count} blocks)");
+        }
+        else
+        {
+            player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + message)} ({count} blocks)");
+        }
+        LogToFile($"BP_REMOVEALL: Removed {count} blocks from {Server.MapName}");
     }
 
-        [RequiresPermissions("@css/root")]
+    
+    [RequiresPermissions("@css/root")]
+    [ConsoleCommand("css_bp_clearprops")]
+    public void OnCmdClearProps(CCSPlayerController? player, CommandInfo info)
+    {
+        CleanupProps();
+        string msg = GetTranslation("props_cleared");
+        if (player == null)
+            LogToFile($"[BlockerPasses] {msg}");
+        else
+            player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + msg)}");
+    }
+
+    [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_preview")]
     public void OnCmdPreview(CCSPlayerController? player, CommandInfo info)
     {
@@ -334,12 +350,12 @@ public class BlockerPasses : BasePlugin
             return;
         }
 
-                var message = GetTranslation("preview_mode");
-                player.PrintToChat($" {ReplaceColorTags("{CYAN}[BlockerPasses] " + message)}");
-                LogToFile($"BP_PREVIEW: Preview mode toggled for {player.PlayerName}");
+        var message = GetTranslation("preview_mode");
+        player.PrintToChat($" {ReplaceColorTags("{CYAN}[BlockerPasses] " + message)}");
+        LogToFile($"BP_PREVIEW: Preview mode toggled for {player.PlayerName}");
     }
 
-        [RequiresPermissions("@css/root")]
+    [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_createtexture")]
     public void OnCmdCreateTexture(CCSPlayerController? player, CommandInfo info)
     {
@@ -358,7 +374,7 @@ public class BlockerPasses : BasePlugin
         var texturePath = info.ArgCount >= 4 ? info.ArgByIndex(3) : null;
         var category = info.ArgCount >= 5 ? info.ArgByIndex(4) : "custom";
 
-                var newTexture = new TextureEntity
+        var newTexture = new TextureEntity
         {
             Name = textureName,
             DisplayName = displayName,
@@ -369,7 +385,7 @@ public class BlockerPasses : BasePlugin
             Category = category
         };
 
-                var newConfig = _config with 
+        var newConfig = _config with 
         { 
             AvailableTextures = new Dictionary<string, TextureEntity>(_config.AvailableTextures) 
             { 
@@ -378,7 +394,7 @@ public class BlockerPasses : BasePlugin
         };
         _config = newConfig;
 
-                SaveConfig(_config);
+        SaveConfig(_config);
 
         var successMessage = GetTranslation("texture_created", textureName);
         if (player == null)
@@ -387,7 +403,7 @@ public class BlockerPasses : BasePlugin
             player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + successMessage)}");
     }
 
-        [RequiresPermissions("@css/root")]
+    [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_applytexture")]
     public void OnCmdApplyTexture(CCSPlayerController? player, CommandInfo info)
     {
@@ -433,7 +449,7 @@ public class BlockerPasses : BasePlugin
             return;
         }
 
-                var blocks = _config.Maps[Server.MapName].ToList();
+        var blocks = _config.Maps[Server.MapName].ToList();
         var block = blocks[blockIndex - 1];
         
         var textureSettings = new TextureSettings
@@ -462,7 +478,7 @@ public class BlockerPasses : BasePlugin
         };
         _config = newConfig;
 
-                SaveConfig(_config);
+        SaveConfig(_config);
 
         var successMessage = GetTranslation("texture_applied", textureName, blockIndex);
         if (player == null)
@@ -471,7 +487,7 @@ public class BlockerPasses : BasePlugin
             player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + successMessage)}");
     }
 
-        [RequiresPermissions("@css/root")]
+    [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_setorigin")]
     public void OnCmdSetOrigin(CCSPlayerController? player, CommandInfo info)
     {
@@ -542,7 +558,7 @@ public class BlockerPasses : BasePlugin
             player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + successMessage)}");
     }
 
-        [RequiresPermissions("@css/root")]
+    [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_setangles")]
     public void OnCmdSetAngles(CCSPlayerController? player, CommandInfo info)
     {
@@ -613,7 +629,7 @@ public class BlockerPasses : BasePlugin
             player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + successMessage)}");
     }
 
-        [RequiresPermissions("@css/root")]
+    [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_textures")]
     public void OnCmdListTextures(CCSPlayerController? player, CommandInfo info)
     {
@@ -643,7 +659,7 @@ public class BlockerPasses : BasePlugin
         }
     }
 
-        [RequiresPermissions("@css/root")]
+    [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_menu")]
     [ConsoleCommand("css_bp")]
     public void OnCmdMenu(CCSPlayerController? player, CommandInfo info)
@@ -660,7 +676,7 @@ public class BlockerPasses : BasePlugin
         }
         else
         {
-                        OpenBlockerPassesMenu(player);
+            OpenBlockerPassesMenu(player);
         }
     }
 
@@ -670,7 +686,7 @@ public class BlockerPasses : BasePlugin
         
         var translationsPath = Path.Combine(ModuleDirectory, "translations");
         
-                var supportedLanguages = new[] { "en", "ru", "uk" };
+        var supportedLanguages = new[] { "en", "ru", "uk" };
         
         foreach (var lang in supportedLanguages)
         {
@@ -686,7 +702,7 @@ public class BlockerPasses : BasePlugin
                     if (translations != null)
                     {
                         _translations[lang] = translations;
-                        Logger.LogInformation($"Loaded translations for language: {lang}");
+                        Logger.LogDebug($"Loaded translations for language: {lang}"); 
                     }
                     else
                     {
@@ -707,7 +723,7 @@ public class BlockerPasses : BasePlugin
             }
         }
         
-                if (_translations.Count == 0)
+        if (_translations.Count == 0)
         {
             Logger.LogWarning("No translations loaded, using hardcoded defaults");
             LoadDefaultTranslations("en");
@@ -768,7 +784,8 @@ public class BlockerPasses : BasePlugin
                 ["angles_updated"] = "Angles updated for block #{0}",
                 ["invalid_coordinates"] = "Invalid coordinates. Usage: <x> <y> <z>",
                 ["back_to_main_menu"] = "Back to Main Menu",
-                ["no_entities_for_this_map"] = "No entities for this map"
+                ["no_entities_for_this_map"] = "No entities for this map",
+                ["props_cleared"] = "All spawned props have been cleared" 
             },
             "ru" => new Dictionary<string, string>
             {
@@ -815,7 +832,8 @@ public class BlockerPasses : BasePlugin
                 ["angles_updated"] = "Углы обновлены для блока #{0}",
                 ["invalid_coordinates"] = "Неверные координаты. Использование: <x> <y> <z>",
                 ["back_to_main_menu"] = "Вернуться в главное меню",
-                ["no_entities_for_this_map"] = "Для этой карты нет сущностей"
+                ["no_entities_for_this_map"] = "Для этой карты нет сущностей",
+                ["props_cleared"] = "Все созданные пропы удалены" 
             },
             "uk" => new Dictionary<string, string>
             {
@@ -862,7 +880,8 @@ public class BlockerPasses : BasePlugin
                 ["angles_updated"] = "Кути оновлено для блоку #{0}",
                 ["invalid_coordinates"] = "Невірні координати. Використання: <x> <y> <z>",
                 ["back_to_main_menu"] = "Повернутися до головного меню",
-                ["no_entities_for_this_map"] = "Для цієї карти немає сущностей"
+                ["no_entities_for_this_map"] = "Для цієї карти немає сущностей",
+                ["props_cleared"] = "Всі створені пропуси видалено" 
             },
             _ => new Dictionary<string, string>()
         };
@@ -879,20 +898,31 @@ public class BlockerPasses : BasePlugin
             return args.Length > 0 ? string.Format(translation, args) : translation;
         }
 
-                if (_translations["en"].TryGetValue(key, out var englishTranslation))
+        if (_translations["en"].TryGetValue(key, out var englishTranslation))
         {
             return args.Length > 0 ? string.Format(englishTranslation, args) : englishTranslation;
         }
 
-        return key;     }
+        return key;
+    }
 
+    
     private HookResult EventRoundStart(EventRoundStart @event, GameEventInfo info)
     {
         var playersCount = Utilities.GetPlayers()
             .Where(u => u.PawnIsAlive && u.PlayerPawn.Value != null && u.TeamNum != (int)CsTeam.None &&
                         u.TeamNum != (int)CsTeam.Spectator && u.PlayerPawn.Value.IsValid).ToList();
 
-        if (playersCount.Count >= _config.Players) return HookResult.Continue;
+        
+        if (playersCount.Count >= _config.Players)
+        {
+            CleanupProps();
+            return HookResult.Continue;
+        }
+
+        
+        if (_spawnedProps.Count > 0)
+            return HookResult.Continue;
 
         if (!_config.Maps.TryGetValue(Server.MapName, out var entitiesMap)) return HookResult.Continue;
 
@@ -902,21 +932,20 @@ public class BlockerPasses : BasePlugin
             if (!string.IsNullOrEmpty(model))
             {
                 Server.PrecacheModel(model);
-                Logger.LogInformation($"[BlockerPasses] Precaching model: {model}");
+                if (_config.LoggingLevel == "Debug")
+                    Logger.LogDebug($"[BlockerPasses] Precaching model: {model}");
             }
         }
 
         foreach (var entity in entitiesMap)
         {
-            var color = entity.Color;
-
-                         if (entity.TextureSettings != null)
-            {
-                color = entity.TextureSettings.TextureColor;
-            }
-
-            SpawnProp(entity.ModelPath, new[] { color[0], color[1], color[2] },
-                GetVectorFromString(entity.Origin), GetQAngleFromString(entity.Angles), entity.Scale, entity.Invisibility, entity.TextureSettings);
+            var color = entity.TextureSettings?.TextureColor ?? entity.Color;
+            SpawnProp(entity.ModelPath, color,
+                GetVectorFromString(entity.Origin),
+                GetQAngleFromString(entity.Angles),
+                entity.Scale,
+                entity.Invisibility,
+                entity.TextureSettings);
         }
 
         Server.PrintToChatAll(
@@ -946,17 +975,10 @@ public class BlockerPasses : BasePlugin
 
     private void SpawnProp(string modelPath, int[] color, Vector origin, QAngle angles, float? entityScale, int invisibility = 255, TextureSettings? textureSettings = null)
     {
-        var logsDir = Path.Combine(ModuleDirectory, "logs");
-        Directory.CreateDirectory(logsDir);
-        var logPath = Path.Combine(logsDir, "spawn_log.txt");
-        File.AppendAllText(logPath, $"[{DateTime.Now}] Attempting to spawn prop with model: '{modelPath}' at {origin}\n");
-
-        Logger.LogInformation($"[BlockerPasses] Attempting to spawn prop with model: '{modelPath}' at {origin}");
-
         if (string.IsNullOrEmpty(modelPath))
         {
-            Logger.LogWarning("[BlockerPasses] Empty model path provided, skipping prop spawn");
-            File.AppendAllText(logPath, $"[{DateTime.Now}] Empty model path, skipping\n");
+            if (_config.LoggingLevel == "Debug")
+                Logger.LogDebug("[BlockerPasses] Empty model path, skipping");
             return;
         }
 
@@ -964,75 +986,79 @@ public class BlockerPasses : BasePlugin
 
         if (prop == null)
         {
-            Logger.LogError("[BlockerPasses] Failed to create prop_dynamic_override entity");
+            Logger.LogError("[BlockerPasses] Failed to create prop_dynamic entity");
             return;
         }
 
         prop.Collision.SolidType = SolidType_t.SOLID_VPHYSICS;
 
-                           var alpha = Math.Clamp(invisibility, 0, 255);
+        var alpha = Math.Clamp(invisibility, 0, 255);
         prop.Render = Color.FromArgb(alpha, color[0], color[1], color[2]);
 
         prop.SetModel(modelPath);
         prop.Teleport(origin, angles, new Vector(0, 0, 0));
         prop.DispatchSpawn();
-        Logger.LogInformation($"[BlockerPasses] Dispatched spawn for prop with model '{modelPath}'");
-        File.AppendAllText(logPath, $"[{DateTime.Now}] Dispatched spawn for prop with model '{modelPath}'\n");
 
-        Server.NextFrame(() =>
+        var bodyComponent = prop.CBodyComponent;
+        if (bodyComponent?.SceneNode != null)
         {
-            Server.NextFrame(() =>
+            try
             {
-                if (prop == null || !prop.IsValid)
-                {
-                    Logger.LogWarning($"[BlockerPasses] Prop is null or invalid when trying to set scale");
-                    return;
-                }
+                var skeletonInstance = bodyComponent.SceneNode.GetSkeletonInstance();
+                if (skeletonInstance != null && entityScale != null && entityScale != 0.0f)
+                    skeletonInstance.Scale = entityScale.Value;
+            }
+            catch (Exception ex)
+            {
+                if (_config.LoggingLevel == "Debug")
+                    Logger.LogDebug($"[BlockerPasses] Failed to set scale: {ex.Message}");
+            }
+        }
 
-                var bodyComponent = prop.CBodyComponent;
-                if (bodyComponent?.SceneNode == null) return;
+        if (textureSettings != null)
+        {
+            ApplyTextureToProp(prop, textureSettings, alpha);
+        }
 
-                try
-                {
-                    var skeletonInstance = bodyComponent.SceneNode.GetSkeletonInstance();
-                    if (skeletonInstance != null && entityScale != null && entityScale != 0.0f)
-                    {
-                        skeletonInstance.Scale = entityScale.Value;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogWarning($"[BlockerPasses] Failed to set skeleton scale: {ex.Message}");
-                }
+        _spawnedProps.Add(prop);
 
-                if (textureSettings != null)
-                {
-                    ApplyTextureToProp(prop, textureSettings, alpha);
-                }
-            });
-        });
+        if (_config.LoggingLevel == "Debug")
+            Logger.LogDebug($"[BlockerPasses] Spawned prop: {modelPath}");
     }
 
     private void ApplyTextureToProp(CBaseModelEntity prop, TextureSettings textureSettings, int alpha = 255)
     {
-                        
-                if (textureSettings.TextureName == "2x2_pattern")
+        if (textureSettings.TextureName == "2x2_pattern")
         {
-                                    var patternColor = Color.FromArgb(alpha, 200, 200, 200);             prop.Render = patternColor;
+            var patternColor = Color.FromArgb(alpha, 200, 200, 200);
+            prop.Render = patternColor;
         }
         else if (textureSettings.TextureColor != null && textureSettings.TextureColor.Length >= 3)
         {
-                        var textureColor = Color.FromArgb(alpha, 
-                textureSettings.TextureColor[0], 
-                textureSettings.TextureColor[1], 
+            var textureColor = Color.FromArgb(alpha,
+                textureSettings.TextureColor[0],
+                textureSettings.TextureColor[1],
                 textureSettings.TextureColor[2]);
             prop.Render = textureColor;
         }
         
-                if (textureSettings.UseCustomTexture && !string.IsNullOrEmpty(textureSettings.CustomTexturePath))
+        if (textureSettings.UseCustomTexture && !string.IsNullOrEmpty(textureSettings.CustomTexturePath))
         {
-                                    Logger.LogInformation($"Applying custom texture: {textureSettings.CustomTexturePath}");
+            if (_config.LoggingLevel == "Debug")
+                Logger.LogDebug($"Applying custom texture: {textureSettings.CustomTexturePath}");
         }
+    }
+
+    private void CleanupProps()
+    {
+        foreach (var prop in _spawnedProps)
+        {
+            if (prop != null && prop.IsValid)
+                prop.Remove();
+        }
+        _spawnedProps.Clear();
+        if (_config.LoggingLevel == "Debug")
+            Logger.LogDebug("[BlockerPasses] All props cleared");
     }
 
     private Config LoadConfig()
@@ -1041,7 +1067,10 @@ public class BlockerPasses : BasePlugin
         if (!File.Exists(configPath)) return CreateConfig(configPath);
 
         var config = JsonSerializer.Deserialize<Config>(File.ReadAllText(configPath))!;
-
+        
+        if (string.IsNullOrEmpty(config.LoggingLevel))
+            config = config with { LoggingLevel = "Info" };
+        
         return config;
     }
 
@@ -1197,7 +1226,8 @@ public class BlockerPasses : BasePlugin
                         }
                     }
                 }
-            }
+            },
+            LoggingLevel = "Info"
         };
 
         File.WriteAllText(configPath,
@@ -1240,14 +1270,14 @@ public class BlockerPasses : BasePlugin
 
         var menu = new ChatMenu(_config.Menu.MenuTitle);
 
-                 menu.AddMenuOption(GetTranslation("reload_config"), (player, option) => {
-             _config = LoadConfig();
-             player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + GetTranslation("config_reloaded"))}");
-         });
+        menu.AddMenuOption(GetTranslation("reload_config"), (player, option) => {
+            _config = LoadConfig();
+            player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] " + GetTranslation("config_reloaded"))}");
+        });
 
-         if (_config.Menu.EnablePositionCommands)
-         {
-             menu.AddMenuOption(GetTranslation("get_position"), (player, option) => {
+        if (_config.Menu.EnablePositionCommands)
+        {
+            menu.AddMenuOption(GetTranslation("get_position"), (player, option) => {
                 if (!player.PawnIsAlive || player.PlayerPawn.Value == null)
                 {
                     player.PrintToChat($" {ReplaceColorTags("{RED}[BlockerPasses] You must be alive to use this!")}");
@@ -1426,7 +1456,7 @@ public class BlockerPasses : BasePlugin
 
         var menu = _menuApi.GetMenu($"🎯 {_config.Menu.MenuTitle}");
         
-                menu.AddMenuOption("🔄 Reload Config", (player, option) => {
+        menu.AddMenuOption("🔄 Reload Config", (player, option) => {
             _config = LoadConfig();
             player.PrintToChat($" {ReplaceColorTags("{GREEN}[BlockerPasses] Configuration reloaded!")}");
         });
@@ -1663,6 +1693,7 @@ public record Config
     public LanguageSettings Language { get; init; } = new();
     public Dictionary<string, TextureEntity> AvailableTextures { get; init; } = new();
     public TextureSettings DefaultTextureSettings { get; init; } = new();
+    public string LoggingLevel { get; init; } = "Info";
 }
 
 public record MenuSettings
@@ -1686,7 +1717,12 @@ public record BlockEntity
     public required string Origin { get; init; }
     public required string Angles { get; init; }
     public float? Scale { get; init; }
-    public int Invisibility { get; init; } = 255;     public int Quota { get; init; } = 0;     public string? Name { get; init; }     public string? TexturePath { get; init; }     public TextureSettings? TextureSettings { get; init; } }
+    public int Invisibility { get; init; } = 255;
+    public int Quota { get; init; } = 0;
+    public string? Name { get; init; }
+    public string? TexturePath { get; init; }
+    public TextureSettings? TextureSettings { get; init; }
+}
 
 public record TextureSettings
 {
@@ -1697,7 +1733,8 @@ public record TextureSettings
     public float TextureOffsetY { get; init; } = 0.0f;
     public float TextureRotation { get; init; } = 0.0f;
     public bool UseCustomTexture { get; init; } = false;
-    public string? CustomTexturePath { get; init; } }
+    public string? CustomTexturePath { get; init; }
+}
 
 public record TextureEntity
 {
