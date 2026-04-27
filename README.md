@@ -1,3 +1,4 @@
+![GitHub all releases](https://img.shields.io/github/downloads/patthsone/BlockerPasses-CS2/total?style=for-the-badge)
 # BlockerPasses-CS2
 Блокирует проходы, если на сервере недостаточно игроков
 
