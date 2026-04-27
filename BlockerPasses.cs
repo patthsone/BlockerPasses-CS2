@@ -28,7 +28,6 @@ public class BlockerPasses : BasePlugin
     private readonly PluginCapability<IMenuApi?> _pluginCapability = new("menu:nfcore");
     private Dictionary<string, Dictionary<string, string>> _translations = new();
     
-    
     private List<CBaseModelEntity> _spawnedProps = new();
 
     private void LogToFile(string message)
@@ -93,7 +92,7 @@ public class BlockerPasses : BasePlugin
         {
             "ru" => "Язык изменен на русский",
             "uk" => "Мову змінено на українську",
-            _ => "Language changed to English"
+            "en" => "Language changed to English"
         };
         if (player == null)
             LogToFile($"[BlockerPasses] {successMessage}");
@@ -327,7 +326,6 @@ public class BlockerPasses : BasePlugin
         LogToFile($"BP_REMOVEALL: Removed {count} blocks from {Server.MapName}");
     }
 
-    
     [RequiresPermissions("@css/root")]
     [ConsoleCommand("css_bp_clearprops")]
     public void OnCmdClearProps(CCSPlayerController? player, CommandInfo info)
@@ -906,21 +904,18 @@ public class BlockerPasses : BasePlugin
         return key;
     }
 
-    
     private HookResult EventRoundStart(EventRoundStart @event, GameEventInfo info)
     {
         var playersCount = Utilities.GetPlayers()
             .Where(u => u.PawnIsAlive && u.PlayerPawn.Value != null && u.TeamNum != (int)CsTeam.None &&
                         u.TeamNum != (int)CsTeam.Spectator && u.PlayerPawn.Value.IsValid).ToList();
 
-        
         if (playersCount.Count >= _config.Players)
         {
             CleanupProps();
             return HookResult.Continue;
         }
 
-        
         if (_spawnedProps.Count > 0)
             return HookResult.Continue;
 
@@ -955,7 +950,6 @@ public class BlockerPasses : BasePlugin
     }
 
     private Vector GetVectorFromString(string vector) => GetFromString(vector, (x, y, z) => new Vector(x, y, z));
-
     private QAngle GetQAngleFromString(string angles) => GetFromString(angles, (x, y, z) => new QAngle(x, y, z));
 
     private static T GetFromString<T>(string values, Func<float, float, float, T> createInstance)
@@ -983,35 +977,52 @@ public class BlockerPasses : BasePlugin
         }
 
         var prop = Utilities.CreateEntityByName<CBaseModelEntity>("prop_dynamic");
-
-        if (prop == null)
+        if (prop == null || !prop.IsValid)
         {
-            Logger.LogError("[BlockerPasses] Failed to create prop_dynamic entity");
+            Logger.LogWarning($"[BlockerPasses] Failed to create valid prop_dynamic for model {modelPath}");
             return;
         }
 
         prop.Collision.SolidType = SolidType_t.SOLID_VPHYSICS;
-
         var alpha = Math.Clamp(invisibility, 0, 255);
         prop.Render = Color.FromArgb(alpha, color[0], color[1], color[2]);
-
         prop.SetModel(modelPath);
         prop.Teleport(origin, angles, new Vector(0, 0, 0));
         prop.DispatchSpawn();
 
-        var bodyComponent = prop.CBodyComponent;
-        if (bodyComponent?.SceneNode != null)
+        if (!prop.IsValid)
+        {
+            if (_config.LoggingLevel == "Debug")
+                Logger.LogDebug($"[BlockerPasses] Prop became invalid after DispatchSpawn for {modelPath}");
+            return;
+        }
+
+        if (entityScale.HasValue && Math.Abs(entityScale.Value) > 0.01f)
         {
             try
             {
-                var skeletonInstance = bodyComponent.SceneNode.GetSkeletonInstance();
-                if (skeletonInstance != null && entityScale != null && entityScale != 0.0f)
-                    skeletonInstance.Scale = entityScale.Value;
+                var bodyComponent = prop.CBodyComponent;
+                if (bodyComponent?.SceneNode != null)
+                {
+                    var skeletonInstance = bodyComponent.SceneNode.GetSkeletonInstance();
+                    if (skeletonInstance != null)
+                    {
+                        skeletonInstance.Scale = entityScale.Value;
+                    }
+                    else if (_config.LoggingLevel == "Debug")
+                    {
+                        Logger.LogDebug($"[BlockerPasses] No skeleton instance for scaling on {modelPath}");
+                    }
+                }
+                else if (_config.LoggingLevel == "Debug")
+                {
+                    Logger.LogDebug($"[BlockerPasses] No BodyComponent or SceneNode for scaling on {modelPath}");
+                }
             }
             catch (Exception ex)
             {
                 if (_config.LoggingLevel == "Debug")
-                    Logger.LogDebug($"[BlockerPasses] Failed to set scale: {ex.Message}");
+                    Logger.LogDebug($"[BlockerPasses] Failed to set scale for {modelPath}: {ex.Message}");
             }
         }
 
@@ -1021,7 +1032,6 @@ public class BlockerPasses : BasePlugin
         }
 
         _spawnedProps.Add(prop);
-
         if (_config.LoggingLevel == "Debug")
             Logger.LogDebug($"[BlockerPasses] Spawned prop: {modelPath}");
     }
